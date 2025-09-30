@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "731977982569",
+    "project_id": "tholagig-3c699",
+    "storage_bucket": "tholagig-3c699.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:731977982569:android:a7a1a4fc2b510b7615f8f8",
+        "android_client_info": {
+          "package_name": "student.projects.tholagig"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBXfy-zdFbpJcTFhU3iSbB1mPm6UL1c1E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

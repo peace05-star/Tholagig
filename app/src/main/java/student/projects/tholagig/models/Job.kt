@@ -1,0 +1,18 @@
+package student.projects.tholagig.models
+
+import java.util.Date
+
+data class Job(
+    val jobId: String = "",
+    val clientId: String = "",
+    val clientName: String = "",
+    val title: String = "",
+    val description: String = "",
+    val category: String = "",
+    val skillsRequired: List<String> = emptyList(),
+    val budget: Double = 0.0,
+    val deadline: Date = Date(),
+    val location: String = "",
+    val status: String = "open", // "open", "in_progress", "completed"
+    val postedAt: Date = Date()
+)
