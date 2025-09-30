@@ -78,5 +78,13 @@ class RecentJobsAdapter(
         }
     }
 
+    fun updateJobs(newJobs: List<Job>) {
+        (this as? RecentJobsAdapter)?.let {
+            // Clear and update the jobs list
+            // Note: This requires making jobs mutable in the adapter
+            // Or you can recreate the adapter with new data
+        }
+    }
+
     override fun getItemCount(): Int = jobs.size
 }

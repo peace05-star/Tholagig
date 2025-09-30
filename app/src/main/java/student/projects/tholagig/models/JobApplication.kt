@@ -20,4 +20,5 @@ data class JobApplication(
     val freelancerRating: Double = 0.0,
     val freelancerCompletedJobs: Int = 0,
     val freelancerSkills: List<String> = emptyList(),
+
 )

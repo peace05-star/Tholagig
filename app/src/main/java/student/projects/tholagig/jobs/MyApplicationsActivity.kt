@@ -4,12 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.*
@@ -29,6 +31,8 @@ class MyApplicationsActivity : AppCompatActivity() {
     private lateinit var emptyState: View
     private lateinit var progressBar: ProgressBar
 
+    private lateinit var toolbar: MaterialToolbar
+
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
     private lateinit var applicationsAdapter: ApplicationAdapter
@@ -36,6 +40,8 @@ class MyApplicationsActivity : AppCompatActivity() {
     private val allApplications = mutableListOf<JobApplication>()
     private val filteredApplications = mutableListOf<JobApplication>()
     private val selectedStatuses = mutableSetOf<String>()
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +51,7 @@ class MyApplicationsActivity : AppCompatActivity() {
         firebaseService = FirebaseService()
 
         initializeViews()
+        setupToolbar()
         setupRecyclerView()
         setupClickListeners()
         loadApplications()
@@ -56,7 +63,31 @@ class MyApplicationsActivity : AppCompatActivity() {
         tvApplicationsCount = findViewById(R.id.tvApplicationsCount)
         emptyState = findViewById(R.id.emptyState)
         progressBar = findViewById(R.id.progressBar)
+        toolbar = findViewById(R.id.toolbar)
     }
+
+    private fun setupToolbar() {
+        Log.d("MyApplications", "Setting up toolbar")
+
+        // Set the Toolbar as the ActionBar
+        setSupportActionBar(toolbar)
+
+        // Enable the back button (the arrow icon)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+
+        // Hide the default title since we have a custom TextView
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        // Option 1: Handle back button with navigation click listener
+        toolbar.setNavigationOnClickListener {
+            Log.d("MyApplications", "Back button clicked")
+            onBackPressed()
+        }
+
+        Log.d("MyApplications", "Toolbar setup complete")
+    }
+
 
     private fun setupRecyclerView() {
         applicationsAdapter = ApplicationAdapter(
@@ -88,7 +119,9 @@ class MyApplicationsActivity : AppCompatActivity() {
             }
             applyFilters()
         }
+
     }
+
 
     private fun loadApplications() {
         progressBar.visibility = View.VISIBLE

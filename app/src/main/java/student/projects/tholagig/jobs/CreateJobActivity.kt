@@ -5,6 +5,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.coroutines.*
 import student.projects.tholagig.R
 import student.projects.tholagig.models.Job
 import student.projects.tholagig.network.FirebaseService
@@ -26,8 +27,8 @@ class CreateJobActivity : AppCompatActivity() {
     private lateinit var firebaseService: FirebaseService
 
     private val categories = arrayOf(
-        "Development", "Design", "Marketing", "Writing", "Administration",
-        "Consulting", "Sales", "Support", "Other"
+        "Mobile Development", "Web Development", "UI/UX Design", "Digital Marketing",
+        "Writing & Content", "Data Science", "Administration", "Consulting", "Other"
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,9 +112,7 @@ class CreateJobActivity : AppCompatActivity() {
         }
 
         val clientId = sessionManager.getUserId() ?: ""
-
-        // Use clientId as clientName for now, or implement getUserName() later
-        val clientName = clientId.ifEmpty { "Unknown Client" }
+        val clientName = sessionManager.getUserName() ?: "Client"
 
         if (clientId.isEmpty()) {
             Toast.makeText(this, "Please login to create a job", Toast.LENGTH_SHORT).show()
@@ -121,7 +120,7 @@ class CreateJobActivity : AppCompatActivity() {
         }
 
         val job = Job(
-            jobId = generateJobId(),
+            jobId = "", // Let FirebaseService generate the ID
             clientId = clientId,
             clientName = clientName,
             title = title,
@@ -129,7 +128,7 @@ class CreateJobActivity : AppCompatActivity() {
             category = category,
             skillsRequired = skills,
             budget = budget,
-            deadline = Date(System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000),
+            deadline = Date(System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000), // 30 days
             location = location.ifEmpty { "Remote" },
             status = "open",
             postedAt = Date()
@@ -138,42 +137,45 @@ class CreateJobActivity : AppCompatActivity() {
         saveJobToFirebase(job)
     }
 
-    private fun generateJobId(): String {
-        return "job_${System.currentTimeMillis()}"
-    }
-
     private fun saveJobToFirebase(job: Job) {
         progressBar.visibility = View.VISIBLE
         btnCreateJob.isEnabled = false
 
-        Thread {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
-                Thread.sleep(2000)
+                val result = firebaseService.createJob(job)
 
-                runOnUiThread {
+                withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     btnCreateJob.isEnabled = true
 
-                    Toast.makeText(
-                        this,
-                        "Job created successfully!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    finish()
+                    if (result.isSuccess) {
+                        Toast.makeText(
+                            this@CreateJobActivity,
+                            "Job created successfully!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        finish() // Go back to dashboard
+                    } else {
+                        Toast.makeText(
+                            this@CreateJobActivity,
+                            "Failed to create job: ${result.exceptionOrNull()?.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             } catch (e: Exception) {
-                runOnUiThread {
+                withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     btnCreateJob.isEnabled = true
                     Toast.makeText(
-                        this,
+                        this@CreateJobActivity,
                         "Error creating job: ${e.message}",
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_LONG
                     ).show()
                 }
             }
-        }.start()
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

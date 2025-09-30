@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingTop="?attr/actionBarSize">
 
         <!-- Header Row -->
         <LinearLayout
@@ -42,7 +42,7 @@
                 android:textColor="@color/white"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="4dp"
-                android:background="@drawable/status_pending_bg" />
+                android:background="@drawable/card_gradient_warning" />
 
         </LinearLayout>
 
