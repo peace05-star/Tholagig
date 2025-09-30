@@ -14,6 +14,9 @@ import student.projects.tholagig.dashboards.FreelancerDashboardActivity
 import student.projects.tholagig.models.User
 import student.projects.tholagig.network.FirebaseService
 import student.projects.tholagig.network.SessionManager
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import student.projects.tholagig.jobs.JobBrowseActivity
+import student.projects.tholagig.jobs.MyApplicationsActivity
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -33,6 +36,7 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var btnChangePassword: Button
     private lateinit var btnLogout: Button
     private lateinit var progressBar: ProgressBar
+    private lateinit var bottomNavigationView: BottomNavigationView
 
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
@@ -47,6 +51,7 @@ class ProfileActivity : AppCompatActivity() {
 
         initializeViews()
         setupClickListeners()
+        setupBottomNavigation()
         loadUserData()
     }
 
@@ -67,6 +72,39 @@ class ProfileActivity : AppCompatActivity() {
         btnChangePassword = findViewById(R.id.btnChangePassword)
         btnLogout = findViewById(R.id.btnLogout)
         progressBar = findViewById(R.id.progressBar)
+        bottomNavigationView = findViewById(R.id.bottom_navigation)
+    }
+
+    private fun setupBottomNavigation() {
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    val intent = Intent(this, FreelancerDashboardActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                R.id.nav_jobs -> {
+                    val intent = Intent(this, JobBrowseActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                R.id.nav_applications -> {
+                    val intent = Intent(this, MyApplicationsActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                R.id.nav_profile -> {
+                    // Already on profile page
+                    true
+                }
+                else -> false
+            }
+        }
+
+        bottomNavigationView.selectedItemId = R.id.nav_profile
     }
 
     private fun setupClickListeners() {
