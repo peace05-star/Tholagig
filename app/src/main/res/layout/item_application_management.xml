@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvFreelancerName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Freelancer Name"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pending"
+                android:textSize="12sp"
+                android:textColor="@color/white"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:background="@drawable/status_pending_bg" />
+
+        </LinearLayout>
+
+        <!-- Job Title -->
+        <TextView
+            android:id="@+id/tvJobTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Job Title"
+            android:textSize="14sp"
+            android:textColor="@color/primary_color"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp" />
+
+        <!-- Skills -->
+        <TextView
+            android:id="@+id/tvSkills"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Skills"
+            android:textSize="12sp"
+            android:textColor="@color/gray"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:layout_marginTop="4dp" />
+
+        <!-- Freelancer Stats Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/tvRating"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="⭐ 4.8"
+                android:textSize="12sp"
+                android:textColor="@color/gray" />
+
+            <TextView
+                android:id="@+id/tvCompletedJobs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="24 jobs completed"
+                android:textSize="12sp"
+                android:textColor="@color/gray" />
+
+        </LinearLayout>
+
+        <!-- Proposal Details Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/tvProposedBudget"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="R 15,000"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary_color" />
+
+            <TextView
+                android:id="@+id/tvEstimatedTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3 months"
+                android:textSize="12sp"
+                android:textColor="@color/gray" />
+
+        </LinearLayout>
+
+        <!-- Applied Date -->
+        <TextView
+            android:id="@+id/tvAppliedDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Applied: 01 Jan 2024"
+            android:textSize="11sp"
+            android:textColor="@color/gray"
+            android:layout_marginTop="4dp" />
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:id="@+id/layoutActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp">
+
+            <Button
+                android:id="@+id/btnViewProfile"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Profile"
+                android:textSize="12sp"
+                android:backgroundTint="@color/gray"
+                android:textColor="@color/white"
+                android:layout_marginEnd="4dp"
+                android:padding="8dp" />
+
+            <Button
+                android:id="@+id/btnMessage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Message"
+                android:textSize="12sp"
+                android:backgroundTint="@color/secondary_color"
+                android:textColor="@color/white"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:padding="8dp" />
+
+            <Button
+                android:id="@+id/btnAccept"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Hire"
+                android:textSize="12sp"
+                android:backgroundTint="@color/green"
+                android:textColor="@color/white"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:padding="8dp" />
+
+            <Button
+                android:id="@+id/btnReject"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Reject"
+                android:textSize="12sp"
+                android:backgroundTint="@color/red"
+                android:textColor="@color/white"
+                android:layout_marginStart="4dp"
+                android:padding="8dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

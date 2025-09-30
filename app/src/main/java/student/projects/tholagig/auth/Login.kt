@@ -120,7 +120,9 @@ class LoginActivity : AppCompatActivity() {
                         SessionManager(this@LoginActivity).saveUserSession(
                             userId = user?.userId ?: "",
                             userType = user?.userType ?: "freelancer",
-                            email = email
+                            email = email,
+                            userName = user?.fullName ?: "",
+
                         )
 
                         showSuccess("Login successful!")

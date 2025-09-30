@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/light_gray_background"
+    android:padding="16dp">
+
+    <!-- Applications Count -->
+    <TextView
+        android:id="@+id/tvApplicationsCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Applications"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary_color"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Status Filter Chips -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="All"
+            android:checkable="true"
+            app:chipBackgroundColor="@color/chip_selector"
+            app:checkedIconEnabled="false" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipPending"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pending"
+            android:checkable="true"
+            app:chipBackgroundColor="@color/chip_selector"
+            app:checkedIconEnabled="false" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipAccepted"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hired"
+            android:checkable="true"
+            app:chipBackgroundColor="@color/chip_selector"
+            app:checkedIconEnabled="false" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipRejected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rejected"
+            android:checkable="true"
+            app:chipBackgroundColor="@color/chip_selector"
+            app:checkedIconEnabled="false" />
+
+    </com.google.android.material.chip.ChipGroup>
+
+    <!-- Applications List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvApplications"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Empty State -->
+    <TextView
+        android:id="@+id/tvEmptyState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No applications found"
+        android:textSize="16sp"
+        android:textColor="@color/gray"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone" />
+
+    <!-- Progress Bar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+</LinearLayout>

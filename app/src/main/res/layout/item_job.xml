@@ -64,6 +64,13 @@
                 android:textColor="@color/gray"
                 android:textSize="12sp" />
 
+            <TextView
+                android:id="@+id/tvJobDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="01 Jan"
+                android:textSize="12sp"
+                android:textColor="@color/gray" />
         </LinearLayout>
 
     </LinearLayout>

@@ -34,6 +34,9 @@
         <activity android:name=".jobs.JobBrowseActivity" />
         <activity android:name=".jobs.JobDetailsActivity" /> <!-- Profile Activity -->
         <activity android:name=".profile.ProfileActivity" />
+
+        <activity android:name=".jobs.MyJobsActivity" />
+        <activity android:name=".jobs.CreateJobActivity" />
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">

@@ -241,10 +241,11 @@ class RegisterActivity : AppCompatActivity() {
                             userId = registeredUser?.userId ?: "",
                             userType = userType,
                             email = email,
+                            userName = fullName
 
                         )
 
-                        showSuccess("🎉 Registration successful! Welcome to TholaGig!")
+                        showSuccess(" Registration successful! Welcome to TholaGig!")
 
                         Handler(Looper.getMainLooper()).postDelayed({
                             navigateToAppropriateDashboard()

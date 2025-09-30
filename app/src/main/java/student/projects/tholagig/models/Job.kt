@@ -14,5 +14,8 @@ data class Job(
     val deadline: Date = Date(),
     val location: String = "",
     val status: String = "open", // "open", "in_progress", "completed"
-    val postedAt: Date = Date()
+    val postedAt: Date = Date(),
+    val createdDate: Date = Date(),
+    val applicationsCount: Int = 0,
+
 )
