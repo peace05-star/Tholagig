@@ -37,6 +37,8 @@
 
         <activity android:name=".jobs.MyJobsActivity" />
         <activity android:name=".jobs.CreateJobActivity" />
+        <activity android:name=".jobs.ApplicationsManagementActivity" />
+
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">

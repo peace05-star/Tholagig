@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/light_gray_background">
+    android:background="@color/light_gray_background"
+    android:paddingTop="?attr/actionBarSize">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -229,6 +230,14 @@
 
             </androidx.cardview.widget.CardView>
 
+            <!-- Add this to your layout -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="16dp"
+                android:visibility="gone" />
         </LinearLayout>
 
     </ScrollView>
@@ -244,5 +253,7 @@
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/primary_color"
         app:tint="@color/white" />
+
+
 
 </RelativeLayout>

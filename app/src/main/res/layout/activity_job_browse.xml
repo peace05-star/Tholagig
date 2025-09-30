@@ -4,11 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@android:color/white">
-
+    android:background="@android:color/white"
+    android:paddingTop="?attr/actionBarSize">
+    <!-- Add this at the top of your LinearLayout, after the opening tag -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/btnBack"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@drawable/bg_gradient"
+        android:theme="?attr/actionBarTheme"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="Browse Jobs"
+        app:titleTextColor="@android:color/white" />
     <!-- Search Bar -->
-
-    <!-- Filter Chips -->
     <SearchView
         android:id="@+id/searchView"
         android:layout_width="match_parent"
@@ -16,6 +24,7 @@
         android:layout_margin="16dp"
         android:queryHint="Search jobs by title, skills..." />
 
+    <!-- Filter Chips -->
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chipGroup"
         android:layout_width="match_parent"
@@ -106,6 +115,19 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="8dp" />
+
+    <!-- Empty State Message -->
+    <TextView
+        android:id="@+id/tvEmptyState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="No jobs available at the moment"
+        android:textSize="16sp"
+        android:textColor="@color/gray"
+        android:padding="32dp"
+        android:visibility="gone" />
 
     <!-- Loading Progress -->
     <ProgressBar

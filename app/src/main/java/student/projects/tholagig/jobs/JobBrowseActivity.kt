@@ -19,10 +19,6 @@ import android.widget.SearchView
 import android.content.Intent
 import android.view.View
 import android.widget.Toast
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import student.projects.tholagig.dashboards.FreelancerDashboardActivity
-import student.projects.tholagig.jobs.MyApplicationsActivity
-import student.projects.tholagig.profile.ProfileActivity
 
 class JobBrowseActivity : AppCompatActivity() {
 
@@ -33,11 +29,13 @@ class JobBrowseActivity : AppCompatActivity() {
     private lateinit var btnFilter: MaterialButton
     private lateinit var tvJobsCount: TextView
     private lateinit var progressBar: ProgressBar
-    private lateinit var bottomNavigationView: BottomNavigationView // ADD THIS
+    private lateinit var tvEmptyState: TextView
 
     private lateinit var jobsAdapter: JobsAdapter
     private val allJobs = mutableListOf<Job>()
     private val filteredJobs = mutableListOf<Job>()
+
+    private lateinit var firebaseService: FirebaseService
 
     private var currentSort = "newest" // newest, highest_budget, deadline
     private val selectedCategories = mutableSetOf<String>()
@@ -47,10 +45,10 @@ class JobBrowseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_job_browse)
 
+        firebaseService = FirebaseService()
         initializeViews()
         setupRecyclerView()
         setupClickListeners()
-        setupBottomNavigation() // ADD THIS
         loadJobsFromFirebase()
     }
 
@@ -62,47 +60,17 @@ class JobBrowseActivity : AppCompatActivity() {
         btnFilter = findViewById(R.id.btnFilter)
         tvJobsCount = findViewById(R.id.tvJobsCount)
         progressBar = findViewById(R.id.progressBar)
-        bottomNavigationView = findViewById(R.id.bottom_navigation) // ADD THIS
+        tvEmptyState = findViewById(R.id.tvEmptyState)
+
+        // REMOVE THIS LINE: setupCategoryChips()
+        // Or keep it but make the function empty
     }
 
-    // ADD THIS METHOD
-    private fun setupBottomNavigation() {
-        try {
-            bottomNavigationView.setOnNavigationItemSelectedListener { item ->
-                when (item.itemId) {
-                    R.id.nav_home -> {
-                        val intent = Intent(this, FreelancerDashboardActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        true
-                    }
-                    R.id.nav_jobs -> {
-                        // Already on jobs page
-                        true
-                    }
-                    R.id.nav_applications -> {
-                        val intent = Intent(this, MyApplicationsActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        true
-                    }
-                    R.id.nav_profile -> {
-                        val intent = Intent(this, ProfileActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        true
-                    }
-                    else -> false
-                }
-            }
-
-            // Set the jobs item as selected
-            bottomNavigationView.selectedItemId = R.id.nav_jobs
-
-        } catch (e: Exception) {
-            Log.e("JobBrowseActivity", "Bottom navigation setup failed: ${e.message}")
-        }
+    // Either remove this function completely OR make it empty:
+    private fun setupCategoryChips() {
+        // EMPTY - chips are already in XML!
     }
+
 
     private fun setupRecyclerView() {
         jobsAdapter = JobsAdapter(filteredJobs) { job ->
@@ -130,11 +98,9 @@ class JobBrowseActivity : AppCompatActivity() {
         chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
             selectedCategories.clear()
             checkedIds.forEach { chipId ->
-                when (chipId) {
-                    R.id.chipRemote -> selectedCategories.add("Remote")
-                    R.id.chipDesign -> selectedCategories.add("Design")
-                    R.id.chipDevelopment -> selectedCategories.add("Development")
-                    R.id.chipMarketing -> selectedCategories.add("Marketing")
+                val chip = group.findViewById<Chip>(chipId)
+                chip?.text?.toString()?.let { category ->
+                    selectedCategories.add(category)
                 }
             }
             applyFilters()
@@ -145,17 +111,21 @@ class JobBrowseActivity : AppCompatActivity() {
             showSortOptions()
         }
 
-        // Filter button (for more advanced filters)
+        // Filter button
         btnFilter.setOnClickListener {
-            Toast.makeText(this, "Advanced filters coming soon!", Toast.LENGTH_SHORT).show()
+            showAdvancedFilters()
+        }
+
+        // Back button
+        findViewById<View>(R.id.btnBack).setOnClickListener {
+            onBackPressed()
         }
     }
 
     private fun loadJobsFromFirebase() {
         progressBar.visibility = View.VISIBLE
         tvJobsCount.text = "Loading jobs..."
-
-        val firebaseService = FirebaseService()
+        tvEmptyState.visibility = View.GONE
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -165,17 +135,21 @@ class JobBrowseActivity : AppCompatActivity() {
                     progressBar.visibility = View.GONE
 
                     if (result.isSuccess) {
+                        val jobs = result.getOrNull() ?: emptyList()
                         allJobs.clear()
-                        allJobs.addAll(result.getOrNull() ?: emptyList())
+                        allJobs.addAll(jobs)
                         applyFilters()
-                        updateJobsCount()
+                        updateEmptyState()
+
+                        Log.d("JobBrowse", "Loaded ${jobs.size} jobs from Firebase")
                     } else {
                         Toast.makeText(
                             this@JobBrowseActivity,
                             "Failed to load jobs: ${result.exceptionOrNull()?.message}",
-                            Toast.LENGTH_SHORT
+                            Toast.LENGTH_LONG
                         ).show()
                         tvJobsCount.text = "Failed to load jobs"
+                        updateEmptyState()
                     }
                 }
             } catch (e: Exception) {
@@ -184,9 +158,10 @@ class JobBrowseActivity : AppCompatActivity() {
                     Toast.makeText(
                         this@JobBrowseActivity,
                         "Error loading jobs: ${e.message}",
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_LONG
                     ).show()
                     tvJobsCount.text = "Error loading jobs"
+                    updateEmptyState()
                 }
             }
         }
@@ -201,7 +176,8 @@ class JobBrowseActivity : AppCompatActivity() {
                 job.title.contains(searchQuery, true) ||
                         job.description.contains(searchQuery, true) ||
                         job.skillsRequired.any { skill -> skill.contains(searchQuery, true) } ||
-                        job.category.contains(searchQuery, true)
+                        job.category.contains(searchQuery, true) ||
+                        job.company?.contains(searchQuery, true) == true
             }
         } else {
             allJobs
@@ -212,7 +188,8 @@ class JobBrowseActivity : AppCompatActivity() {
             searchFiltered.filter { job ->
                 selectedCategories.any { category ->
                     job.category.contains(category, true) ||
-                            job.location.contains(category, true)
+                            job.location.contains(category, true) ||
+                            (category == "Remote" && job.location.contains("remote", true))
                 }
             }
         } else {
@@ -223,12 +200,14 @@ class JobBrowseActivity : AppCompatActivity() {
         val sortedJobs = when (currentSort) {
             "highest_budget" -> categoryFiltered.sortedByDescending { it.budget }
             "deadline" -> categoryFiltered.sortedBy { it.deadline }
+            "lowest_budget" -> categoryFiltered.sortedBy { it.budget }
             else -> categoryFiltered.sortedByDescending { it.postedAt } // newest first
         }
 
         filteredJobs.addAll(sortedJobs)
         jobsAdapter.notifyDataSetChanged()
         updateJobsCount()
+        updateEmptyState()
     }
 
     private fun updateJobsCount() {
@@ -240,8 +219,21 @@ class JobBrowseActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateEmptyState() {
+        if (filteredJobs.isEmpty()) {
+            tvEmptyState.visibility = View.VISIBLE
+            if (allJobs.isEmpty()) {
+                tvEmptyState.text = "No jobs available at the moment"
+            } else {
+                tvEmptyState.text = "No jobs match your filters\nTry adjusting your search or filters"
+            }
+        } else {
+            tvEmptyState.visibility = View.GONE
+        }
+    }
+
     private fun showSortOptions() {
-        val sortOptions = arrayOf("Newest First", "Highest Budget", "Closest Deadline")
+        val sortOptions = arrayOf("Newest First", "Highest Budget", "Lowest Budget", "Closest Deadline")
 
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Sort by")
@@ -256,6 +248,10 @@ class JobBrowseActivity : AppCompatActivity() {
                         btnSort.text = "Sort: Highest Budget"
                     }
                     2 -> {
+                        currentSort = "lowest_budget"
+                        btnSort.text = "Sort: Lowest Budget"
+                    }
+                    3 -> {
                         currentSort = "deadline"
                         btnSort.text = "Sort: Deadline"
                     }
@@ -265,11 +261,22 @@ class JobBrowseActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun showAdvancedFilters() {
+        // You can implement more advanced filters here
+        // For now, show a simple message
+        Toast.makeText(this, "Advanced filters coming soon!", Toast.LENGTH_SHORT).show()
+    }
+
     private fun onJobItemClick(job: Job) {
         val intent = Intent(this, JobDetailsActivity::class.java).apply {
             putExtra("JOB_ID", job.jobId)
-            putExtra("JOB_TITLE", job.title)
         }
         startActivity(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh jobs when returning to this activity
+        loadJobsFromFirebase()
     }
 }

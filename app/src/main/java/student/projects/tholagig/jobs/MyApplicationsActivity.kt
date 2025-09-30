@@ -4,12 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.*
@@ -20,10 +22,6 @@ import student.projects.tholagig.models.JobApplication
 import student.projects.tholagig.network.FirebaseService
 import student.projects.tholagig.network.SessionManager
 import java.util.Date
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import student.projects.tholagig.dashboards.FreelancerDashboardActivity
-import student.projects.tholagig.jobs.JobBrowseActivity
-import student.projects.tholagig.profile.ProfileActivity
 
 class MyApplicationsActivity : AppCompatActivity() {
 
@@ -32,7 +30,8 @@ class MyApplicationsActivity : AppCompatActivity() {
     private lateinit var tvApplicationsCount: TextView
     private lateinit var emptyState: View
     private lateinit var progressBar: ProgressBar
-    private lateinit var bottomNavigationView: BottomNavigationView
+
+    private lateinit var toolbar: MaterialToolbar
 
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
@@ -42,6 +41,8 @@ class MyApplicationsActivity : AppCompatActivity() {
     private val filteredApplications = mutableListOf<JobApplication>()
     private val selectedStatuses = mutableSetOf<String>()
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_applications)
@@ -50,9 +51,9 @@ class MyApplicationsActivity : AppCompatActivity() {
         firebaseService = FirebaseService()
 
         initializeViews()
+        setupToolbar()
         setupRecyclerView()
         setupClickListeners()
-        setupBottomNavigation()
         loadApplications()
     }
 
@@ -62,40 +63,31 @@ class MyApplicationsActivity : AppCompatActivity() {
         tvApplicationsCount = findViewById(R.id.tvApplicationsCount)
         emptyState = findViewById(R.id.emptyState)
         progressBar = findViewById(R.id.progressBar)
-        bottomNavigationView = findViewById(R.id.bottom_navigation)
+        toolbar = findViewById(R.id.toolbar)
     }
 
-    private fun setupBottomNavigation() {
-        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_home -> {
-                    val intent = Intent(this, FreelancerDashboardActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                    true
-                }
-                R.id.nav_jobs -> {
-                    val intent = Intent(this, JobBrowseActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                    true
-                }
-                R.id.nav_applications -> {
-                    // Already on applications page
-                    true
-                }
-                R.id.nav_profile -> {
-                    val intent = Intent(this, ProfileActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                    true
-                }
-                else -> false
-            }
+    private fun setupToolbar() {
+        Log.d("MyApplications", "Setting up toolbar")
+
+        // Set the Toolbar as the ActionBar
+        setSupportActionBar(toolbar)
+
+        // Enable the back button (the arrow icon)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+
+        // Hide the default title since we have a custom TextView
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        // Option 1: Handle back button with navigation click listener
+        toolbar.setNavigationOnClickListener {
+            Log.d("MyApplications", "Back button clicked")
+            onBackPressed()
         }
 
-        bottomNavigationView.selectedItemId = R.id.nav_applications
+        Log.d("MyApplications", "Toolbar setup complete")
     }
+
 
     private fun setupRecyclerView() {
         applicationsAdapter = ApplicationAdapter(
@@ -127,7 +119,9 @@ class MyApplicationsActivity : AppCompatActivity() {
             }
             applyFilters()
         }
+
     }
+
 
     private fun loadApplications() {
         progressBar.visibility = View.VISIBLE

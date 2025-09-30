@@ -56,12 +56,12 @@ class ApplicationsManagementAdapter(
 
         holder.tvFreelancerName.text = application.freelancerName
         holder.tvJobTitle.text = application.jobTitle
-        holder.tvSkills.text = application.freelancerSkills.joinToString(" • ")
+        holder.tvSkills.text = application.freelancerSkills?.joinToString(" • ") ?: "No skills listed"
         holder.tvProposedBudget.text = currencyFormat.format(application.proposedBudget)
         holder.tvEstimatedTime.text = application.estimatedTime
         holder.tvAppliedDate.text = "Applied: ${dateFormat.format(application.appliedAt)}"
-        holder.tvRating.text = "⭐ ${application.freelancerRating}"
-        holder.tvCompletedJobs.text = "${application.freelancerCompletedJobs} jobs completed"
+        holder.tvRating.text = "⭐ ${application.freelancerRating ?: "No rating"}"
+        holder.tvCompletedJobs.text = "${application.freelancerCompletedJobs ?: 0} jobs completed"
 
         // Set status with appropriate color
         setStatusUI(holder.tvStatus, application.status)
@@ -72,6 +72,8 @@ class ApplicationsManagementAdapter(
                 holder.layoutActions.visibility = View.VISIBLE
                 holder.btnAccept.visibility = View.VISIBLE
                 holder.btnReject.visibility = View.VISIBLE
+                holder.btnAccept.text = "Hire"
+                holder.btnReject.text = "Reject"
             }
             "accepted" -> {
                 holder.layoutActions.visibility = View.VISIBLE
@@ -115,29 +117,38 @@ class ApplicationsManagementAdapter(
     private fun setStatusUI(statusView: TextView, status: String) {
         when (status.lowercase()) {
             "pending" -> {
-                statusView.text = "Pending Review"
+                statusView.text = "⏳ Pending Review"
                 statusView.setBackgroundResource(R.drawable.status_pending_bg)
+                statusView.setTextColor(statusView.context.getColor(R.color.white))
             }
             "accepted" -> {
-                statusView.text = "Hired"
+                statusView.text = "✅ Hired"
                 statusView.setBackgroundResource(R.drawable.status_accepted_bg)
+                statusView.setTextColor(statusView.context.getColor(R.color.white))
             }
             "rejected" -> {
-                statusView.text = "Rejected"
+                statusView.text = "❌ Rejected"
                 statusView.setBackgroundResource(R.drawable.status_rejected_bg)
+                statusView.setTextColor(statusView.context.getColor(R.color.white))
             }
             else -> {
                 statusView.text = status
                 statusView.setBackgroundResource(R.drawable.status_pending_bg)
+                statusView.setTextColor(statusView.context.getColor(R.color.white))
             }
         }
     }
 
     private fun showCoverLetterDialog(application: JobApplication, context: android.content.Context) {
+        val coverLetter = application.coverLetter ?: "No cover letter provided"
+
         AlertDialog.Builder(context)
-            .setTitle("Cover Letter from ${application.freelancerName}")
-            .setMessage(application.coverLetter)
+            .setTitle("📝 Cover Letter from ${application.freelancerName}")
+            .setMessage(coverLetter)
             .setPositiveButton("Close", null)
+            .setNeutralButton("View Profile") { dialog, which ->
+                onViewProfile(application)
+            }
             .show()
     }
 

@@ -4,28 +4,29 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white">
+    android:background="@color/white"
+    android:paddingTop="?attr/actionBarSize">
 
-
-    <!-- Toolbar -->
+    <!-- Toolbar with custom title -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/white"
-        android:elevation="4dp">
+        android:background="@drawable/bg_gradient"
+        android:elevation="4dp"
+        android:theme="?attr/actionBarTheme"
+        app:navigationIcon="@drawable/ic_arrow_back">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="My Applications"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
             android:layout_gravity="center" />
 
     </com.google.android.material.appbar.MaterialToolbar>
-
     <!-- Status Filter Chips -->
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chipGroupStatus"
@@ -137,16 +138,5 @@
         android:layout_gravity="center"
         android:layout_marginVertical="16dp"
         android:visibility="gone" />
-
-    <!-- Bottom Navigation -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        app:menu="@menu/bottom_nav_freelancer"
-        app:itemIconTint="@color/orange"
-        app:itemTextColor="@color/orange" />
-
 
 </LinearLayout>
