@@ -18,6 +18,8 @@ import student.projects.tholagig.profile.ProfileActivity
 import android.content.Intent
 import student.projects.tholagig.jobs.MyApplicationsActivity
 import student.projects.tholagig.network.SessionManager
+import com.google.android.material.bottomnavigation.BottomNavigationView // ADD THIS IMPORT
+import android.util.Log // ADD THIS IMPORT
 
 class FreelancerDashboardActivity : AppCompatActivity() {
 
@@ -25,10 +27,11 @@ class FreelancerDashboardActivity : AppCompatActivity() {
     private lateinit var tvAppliedCount: TextView
     private lateinit var tvActiveCount: TextView
     private lateinit var tvEarnings: TextView
-    private lateinit var layoutBrowseJobs: LinearLayout // Changed from Button
-    private lateinit var layoutMyApplications: LinearLayout // Changed from Button
+    private lateinit var layoutBrowseJobs: LinearLayout
+    private lateinit var layoutMyApplications: LinearLayout
     private lateinit var btnProfile: ImageButton
     private lateinit var rvJobs: RecyclerView
+    private lateinit var bottomNavigationView: BottomNavigationView // ADD THIS
 
     private lateinit var jobsAdapter: JobsAdapter
     private val jobList = mutableListOf<Job>()
@@ -40,9 +43,9 @@ class FreelancerDashboardActivity : AppCompatActivity() {
         initializeViews()
         setupRecyclerView()
         setupClickListeners()
+        setupBottomNavigation() // ADD THIS LINE
         loadUserData()
         loadMockData()
-
     }
 
     private fun initializeViews() {
@@ -50,10 +53,53 @@ class FreelancerDashboardActivity : AppCompatActivity() {
         tvAppliedCount = findViewById(R.id.tvAppliedCount)
         tvActiveCount = findViewById(R.id.tvActiveCount)
         tvEarnings = findViewById(R.id.tvEarnings)
-        layoutBrowseJobs = findViewById(R.id.btnBrowseJobs) // This is a LinearLayout
-        layoutMyApplications = findViewById(R.id.btnMyApplications) // This is a LinearLayout
+        layoutBrowseJobs = findViewById(R.id.btnBrowseJobs)
+        layoutMyApplications = findViewById(R.id.btnMyApplications)
         btnProfile = findViewById(R.id.btnProfile)
         rvJobs = findViewById(R.id.rvJobs)
+        bottomNavigationView = findViewById(R.id.bottom_navigation) // ADD THIS
+    }
+
+    // ADD THIS NEW METHOD
+    private fun setupBottomNavigation() {
+        try {
+            bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+                when (item.itemId) {
+                    R.id.nav_home -> {
+                        // Already on home, just refresh the data
+                        loadMockData()
+                        Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    R.id.nav_jobs -> {
+                        // Navigate to job browse
+                        val intent = Intent(this, JobBrowseActivity::class.java)
+                        startActivity(intent)
+                        true
+                    }
+                    R.id.nav_applications -> {
+                        // Navigate to my applications
+                        val intent = Intent(this, MyApplicationsActivity::class.java)
+                        startActivity(intent)
+                        true
+                    }
+                    R.id.nav_profile -> {
+                        // Navigate to profile
+                        val intent = Intent(this, ProfileActivity::class.java)
+                        startActivity(intent)
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+            // Set the home item as selected by default
+            bottomNavigationView.selectedItemId = R.id.nav_home
+
+        } catch (e: Exception) {
+            Log.e("BottomNav", "Bottom navigation setup failed: ${e.message}")
+            Toast.makeText(this, "Navigation error", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun loadUserData() {
@@ -75,6 +121,7 @@ class FreelancerDashboardActivity : AppCompatActivity() {
             "Freelancer" // Fallback
         }
     }
+
     private fun setupRecyclerView() {
         jobsAdapter = JobsAdapter(jobList) { job ->
             onJobItemClick(job)
