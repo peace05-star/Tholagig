@@ -5,13 +5,14 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    app:cardElevation="2dp"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingTop="?attr/actionBarSize">
 
         <!-- Job Title and Status -->
         <LinearLayout
@@ -38,7 +39,7 @@
                 android:textSize="12sp"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="4dp"
-                android:background="@drawable/status_pending_bg"
+                android:background="@drawable/card_gradient_warning"
                 android:textColor="@color/white" />
 
         </LinearLayout>

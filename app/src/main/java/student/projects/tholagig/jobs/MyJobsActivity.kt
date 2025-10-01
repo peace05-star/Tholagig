@@ -6,16 +6,17 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.*
 import student.projects.tholagig.R
 import student.projects.tholagig.Adapters.JobsAdapter
 import student.projects.tholagig.models.Job
 import student.projects.tholagig.network.FirebaseService
 import student.projects.tholagig.network.SessionManager
-import java.util.*
 
 class MyJobsActivity : AppCompatActivity() {
 
@@ -54,7 +55,7 @@ class MyJobsActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        jobsAdapter = JobsAdapter(jobsList) { job ->  // Only 2 arguments: jobsList and lambda
+        jobsAdapter = JobsAdapter(jobsList) { job ->
             openJobDetails(job)
         }
         rvJobs.apply {
@@ -79,75 +80,40 @@ class MyJobsActivity : AppCompatActivity() {
             return
         }
 
-        // For now, load mock data. Replace with actual Firebase call
-        loadMockJobs()
-    }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val result = firebaseService.getJobs()
 
-    private fun loadMockJobs() {
-        jobsList.clear()
-        jobsList.addAll(
-            listOf(
-                Job(
-                    jobId = "job_1",
-                    clientId = "client_123",
-                    clientName = "Your Company",
-                    title = "Mobile App Developer",
-                    description = "Need an experienced mobile developer to create a cross-platform application for our business. The app should include user authentication, real-time messaging, and payment integration.",
-                    category = "Development",
-                    skillsRequired = listOf("Kotlin", "Android", "Firebase", "REST API"),
-                    budget = 15000.0,
-                    deadline = Date(System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000), // 30 days from now
-                    location = "Johannesburg",
-                    status = "open",
-                    postedAt = Date()
-                ),
-                Job(
-                    jobId = "job_2",
-                    clientId = "client_123",
-                    clientName = "Your Company",
-                    title = "UI/UX Designer",
-                    description = "Looking for a creative UI/UX designer to redesign our mobile application interface. Focus on improving user experience and modernizing the visual design.",
-                    category = "Design",
-                    skillsRequired = listOf("Figma", "Adobe XD", "User Research", "Wireframing"),
-                    budget = 12000.0,
-                    deadline = Date(System.currentTimeMillis() + 20L * 24 * 60 * 60 * 1000), // 20 days from now
-                    location = "Cape Town",
-                    status = "open",
-                    postedAt = Date(System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
-                ),
-                Job(
-                    jobId = "job_3",
-                    clientId = "client_123",
-                    clientName = "Your Company",
-                    title = "Backend Developer",
-                    description = "Need a backend developer to build RESTful APIs and database architecture for our new web application.",
-                    category = "Development",
-                    skillsRequired = listOf("Node.js", "MongoDB", "Express.js", "AWS"),
-                    budget = 20000.0,
-                    deadline = Date(System.currentTimeMillis() + 45L * 24 * 60 * 60 * 1000), // 45 days from now
-                    location = "Remote",
-                    status = "in_progress",
-                    postedAt = Date(System.currentTimeMillis() - 5 * 24 * 60 * 60 * 1000) // 5 days ago
-                ),
-                Job(
-                    jobId = "job_4",
-                    clientId = "client_123",
-                    clientName = "Your Company",
-                    title = "Social Media Manager",
-                    description = "Looking for a social media manager to handle our company's online presence across multiple platforms.",
-                    category = "Marketing",
-                    skillsRequired = listOf("Social Media", "Content Creation", "Analytics"),
-                    budget = 8000.0,
-                    deadline = Date(System.currentTimeMillis() - 10L * 24 * 60 * 60 * 1000), // 10 days ago (past deadline)
-                    location = "Remote",
-                    status = "completed",
-                    postedAt = Date(System.currentTimeMillis() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
-                )
-            )
-        )
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
 
-        progressBar.visibility = View.GONE
-        updateUI()
+                    if (result.isSuccess) {
+                        val allJobs = result.getOrNull() ?: emptyList()
+                        // Filter jobs for this client
+                        jobsList.clear()
+                        jobsList.addAll(allJobs.filter { it.clientId == clientId })
+                        updateUI()
+                    } else {
+                        showEmptyState("Failed to load jobs")
+                        Toast.makeText(
+                            this@MyJobsActivity,
+                            "Error: ${result.exceptionOrNull()?.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    showEmptyState("Error loading jobs")
+                    Toast.makeText(
+                        this@MyJobsActivity,
+                        "Error: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 
     private fun updateUI() {
@@ -173,7 +139,7 @@ class MyJobsActivity : AppCompatActivity() {
     private fun openJobDetails(job: Job) {
         val intent = Intent(this, JobDetailsActivity::class.java).apply {
             putExtra("JOB_ID", job.jobId)
-            putExtra("IS_OWNER", true) // Client owns this job
+            putExtra("IS_OWNER", true)
         }
         startActivity(intent)
     }
@@ -190,7 +156,6 @@ class MyJobsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Refresh jobs when returning from CreateJobActivity
-        loadJobs()
+        loadJobs() // Refresh when returning
     }
 }

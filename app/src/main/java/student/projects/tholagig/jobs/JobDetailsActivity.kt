@@ -37,6 +37,9 @@ class JobDetailsActivity : AppCompatActivity() {
     private lateinit var chipGroupSkills: ChipGroup
     private lateinit var rvSimilarJobs: RecyclerView
     private lateinit var progressBar: ProgressBar
+    private lateinit var tvSimilarJobsTitle: TextView
+    private lateinit var tvPostedDate: TextView
+    private lateinit var tvExperienceLevel: TextView
 
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
@@ -52,6 +55,8 @@ class JobDetailsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_job_details)
 
         sessionManager = SessionManager(this)
+
+
         firebaseService = FirebaseService()
 
         initializeViews()
@@ -59,6 +64,8 @@ class JobDetailsActivity : AppCompatActivity() {
         setupClickListeners()
         loadJobDetails()
         checkApplicationStatus()
+        checkIfJobSaved()
+        checkIfJobOwner()
     }
 
     private fun initializeViews() {
@@ -77,6 +84,9 @@ class JobDetailsActivity : AppCompatActivity() {
         chipGroupSkills = findViewById(R.id.chipGroupSkills)
         rvSimilarJobs = findViewById(R.id.rvSimilarJobs)
         progressBar = findViewById(R.id.progressBar)
+        tvSimilarJobsTitle = findViewById(R.id.tvSimilarJobsTitle)
+        tvPostedDate = findViewById(R.id.tvPostedDate)
+        tvExperienceLevel = findViewById(R.id.tvExperienceLevel)
     }
 
     private fun setupRecyclerView() {
@@ -84,12 +94,11 @@ class JobDetailsActivity : AppCompatActivity() {
             // Navigate to this similar job
             val intent = Intent(this, JobDetailsActivity::class.java).apply {
                 putExtra("JOB_ID", job.jobId)
-                putExtra("JOB_TITLE", job.title)
             }
             startActivity(intent)
         }
         rvSimilarJobs.apply {
-            layoutManager = LinearLayoutManager(this@JobDetailsActivity)
+            layoutManager = LinearLayoutManager(this@JobDetailsActivity, LinearLayoutManager.HORIZONTAL, false)
             adapter = similarJobsAdapter
         }
     }
@@ -106,27 +115,48 @@ class JobDetailsActivity : AppCompatActivity() {
         btnSave.setOnClickListener {
             toggleSaveJob()
         }
+
+        // Initialize back button
+        findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
+            onBackPressed()
+        }
     }
 
     private fun loadJobDetails() {
         progressBar.visibility = View.VISIBLE
 
         val jobId = intent.getStringExtra("JOB_ID") ?: ""
-        val jobTitle = intent.getStringExtra("JOB_TITLE") ?: ""
+
+        if (jobId.isEmpty()) {
+            Toast.makeText(this, "Job not found", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // In a real app, fetch job details from Firebase
-                // For now, we'll enhance the mock data
-                val mockJob = createEnhancedMockJob(jobId, jobTitle)
-                currentJob = mockJob
+                // Fetch job from Firebase
+                val jobResult = firebaseService.getJobById(jobId)
 
-                // Load similar jobs
-                loadSimilarJobs(mockJob.category)
+                if (jobResult.isSuccess) {
+                    currentJob = jobResult.getOrNull()
+                    Log.d("JobDetails", "Loaded job from Firebase: ${currentJob?.title}")
 
-                withContext(Dispatchers.Main) {
-                    displayJobDetails(mockJob)
-                    progressBar.visibility = View.GONE
+                    withContext(Dispatchers.Main) {
+                        currentJob?.let { job ->
+                            displayJobDetails(job)
+                            // Load similar jobs based on actual job category
+                            loadSimilarJobs(job.category)
+                        } ?: run {
+                            Toast.makeText(this@JobDetailsActivity, "Job not found", Toast.LENGTH_SHORT).show()
+                            finish()
+                        }
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@JobDetailsActivity, "Failed to load job: ${jobResult.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -136,29 +166,15 @@ class JobDetailsActivity : AppCompatActivity() {
                         "Error loading job details: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
+                    Log.e("JobDetails", "Error loading job: ${e.message}", e)
                 }
             }
         }
     }
 
-    private fun createEnhancedMockJob(jobId: String, title: String): Job {
-        return Job(
-            jobId = jobId,
-            title = title,
-            clientId = "client_123",
-            clientName = "Sarah Johnson",
-            description = "We are looking for an experienced mobile app developer to build a modern e-commerce application from scratch. The ideal candidate should have extensive experience with Kotlin, Android SDK, and Firebase.\n\nResponsibilities:\n• Develop and maintain advanced Android applications\n• Collaborate with cross-functional teams\n• Implement clean, modern UI/UX designs\n• Integrate with REST APIs and third-party services\n• Ensure application performance and quality\n\nRequirements:\n• 3+ years of Android development experience\n• Strong knowledge of Kotlin and Java\n• Experience with Firebase, Retrofit, and Room\n• Understanding of Material Design principles\n• Experience with version control (Git)",
-            budget = 15000.0,
-            category = "Mobile Development",
-            skillsRequired = listOf("Kotlin", "Android SDK", "Firebase", "REST APIs", "Material Design", "Git"),
-            location = "Remote",
-            deadline = Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000),
-            postedAt = Date(System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000)
-        )
-    }
-
     private fun displayJobDetails(job: Job) {
         val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+        val postedDateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
 
         tvJobTitle.text = job.title
         tvClientName.text = "Posted by ${job.clientName}"
@@ -167,11 +183,20 @@ class JobDetailsActivity : AppCompatActivity() {
         tvCategory.text = job.category
         tvLocation.text = job.location
         tvDescription.text = job.description
+        tvPostedDate.text = "Posted: ${postedDateFormat.format(job.postedAt)}"
 
-        // Mock client information
-        tvClientCompany.text = "Tech Innovations Ltd."
-        tvClientRating.text = "⭐ 4.8 (24 reviews)"
-        tvClientBio.text = "Tech Innovations is a leading software development company specializing in mobile and web applications. We've been delivering high-quality solutions for over 5 years."
+        // Display client information from actual job data
+        tvClientCompany.text = job.company ?: "Independent Client"
+        tvClientRating.text = "⭐ ${job.clientRating ?: "4.5"} (${job.totalReviews ?: "10"} reviews)"
+        tvClientBio.text = job.clientBio ?: "Experienced client looking for quality work."
+
+        // Experience level
+        tvExperienceLevel.text = when (job.experienceLevel ?: "Intermediate") {
+            "Beginner" -> "👶 Beginner Level"
+            "Intermediate" -> "🚀 Intermediate Level"
+            "Expert" -> "🏆 Expert Level"
+            else -> "🚀 ${job.experienceLevel}"
+        }
 
         // Add skills chips
         chipGroupSkills.removeAllViews()
@@ -181,44 +206,65 @@ class JobDetailsActivity : AppCompatActivity() {
                 setChipBackgroundColorResource(R.color.light_gray)
                 setTextColor(resources.getColor(R.color.black))
                 isClickable = false
+                setPadding(32, 16, 32, 16)
             }
             chipGroupSkills.addView(chip)
         }
+
+        progressBar.visibility = View.GONE
+        checkIfJobOwner()
     }
 
     private fun loadSimilarJobs(category: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val result = firebaseService.getJobs()
+                val result = firebaseService.getSimilarJobs(currentJob?.jobId ?: "", category)
 
                 withContext(Dispatchers.Main) {
                     if (result.isSuccess) {
-                        val allJobs = result.getOrNull() ?: emptyList()
-                        // Filter similar jobs by category, excluding current job
+                        val similarJobsList = result.getOrNull() ?: emptyList()
                         similarJobs.clear()
-                        similarJobs.addAll(
-                            allJobs.filter {
-                                it.category == category && it.jobId != currentJob?.jobId
-                            }.take(3) // Show max 3 similar jobs
-                        )
+                        similarJobs.addAll(similarJobsList)
                         similarJobsAdapter.notifyDataSetChanged()
+
+                        // Update similar jobs title
+                        tvSimilarJobsTitle.text = if (similarJobs.isEmpty()) {
+                            "No similar jobs found"
+                        } else {
+                            "Similar Jobs (${similarJobs.size})"
+                        }
+                    } else {
+                        tvSimilarJobsTitle.text = "Failed to load similar jobs"
                     }
                 }
             } catch (e: Exception) {
                 Log.e("JobDetails", "Error loading similar jobs: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    tvSimilarJobsTitle.text = "Error loading similar jobs"
+                }
             }
+        }
+    }
+
+    private fun checkIfJobOwner() {
+        val currentUserId = sessionManager.getUserId() ?: ""
+        val jobClientId = currentJob?.clientId ?: ""
+
+        // If current user is the job owner, hide the apply button
+        if (currentUserId == jobClientId) {
+            btnApply.visibility = View.GONE
+            Toast.makeText(this, "This is your job posting", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun checkApplicationStatus() {
         val userId = sessionManager.getUserId() ?: ""
-        val jobId = intent.getStringExtra("JOB_ID") ?: ""
+        val jobId = currentJob?.jobId ?: intent.getStringExtra("JOB_ID") ?: ""
 
         if (userId.isEmpty() || jobId.isEmpty()) return
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Check if user has already applied
                 val result = firebaseService.checkIfApplied(jobId, userId)
 
                 withContext(Dispatchers.Main) {
@@ -229,6 +275,28 @@ class JobDetailsActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 Log.e("JobDetails", "Error checking application status: ${e.message}")
+            }
+        }
+    }
+
+    private fun checkIfJobSaved() {
+        val userId = sessionManager.getUserId() ?: ""
+        val jobId = currentJob?.jobId ?: intent.getStringExtra("JOB_ID") ?: ""
+
+        if (userId.isEmpty() || jobId.isEmpty()) return
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val result = firebaseService.isJobSaved(userId, jobId)
+
+                withContext(Dispatchers.Main) {
+                    if (result.isSuccess) {
+                        isSaved = result.getOrNull() ?: false
+                        updateUIState()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("JobDetails", "Error checking saved status: ${e.message}")
             }
         }
     }
@@ -256,27 +324,43 @@ class JobDetailsActivity : AppCompatActivity() {
                     "Freelancer"
                 }
 
-                // Create job application with proper named parameters
+                // Get freelancer skills for the cover letter
+                val skillsResult = firebaseService.getFreelancerSkills(userId)
+                val userSkills = skillsResult.getOrNull() ?: emptyList()
+
+                // Create job application
                 val application = JobApplication(
-                    applicationId = "app_${System.currentTimeMillis()}",
                     jobId = job.jobId,
                     freelancerId = userId,
                     freelancerName = userName,
                     freelancerEmail = userEmail,
-                    coverLetter = "I'm interested in this position and believe my skills are a great match for your requirements. I have experience with ${job.skillsRequired.joinToString(", ")} and I'm confident I can deliver high-quality results for your project.",
+                    coverLetter = generateCoverLetter(job, userName, userSkills),
                     proposedBudget = job.budget,
-                    status = "pending",
-                    appliedAt = Date(),
                     clientId = job.clientId,
                     jobTitle = job.title,
-                    clientName = job.clientName
+                    clientName = job.clientName,
+                    estimatedTime = "2-4 weeks", // You can make this dynamic
+                    freelancerSkills = userSkills
                 )
 
-                // TODO: Implement actual application submission to Firebase
-                // val result = firebaseService.submitApplication(application)
+                val result = firebaseService.submitApplication(application)
 
-                // For now, we'll simulate the API call
-                simulateApplicationSubmission(application)
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    btnApply.isEnabled = true
+
+                    if (result.isSuccess) {
+                        hasApplied = true
+                        updateUIState()
+                        showApplicationSuccessDialog(application)
+                    } else {
+                        Toast.makeText(
+                            this@JobDetailsActivity,
+                            "Failed to submit application: ${result.exceptionOrNull()?.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
 
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -285,25 +369,35 @@ class JobDetailsActivity : AppCompatActivity() {
                     Toast.makeText(
                         this@JobDetailsActivity,
                         "Error submitting application: ${e.message}",
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_LONG
                     ).show()
                 }
             }
         }
     }
 
-    private suspend fun simulateApplicationSubmission(application: JobApplication) {
-        // Simulate API call delay
-        delay(2000)
+    private fun generateCoverLetter(job: Job, userName: String, skills: List<String>): String {
+        val matchingSkills = skills.intersect(job.skillsRequired.toSet())
 
-        withContext(Dispatchers.Main) {
-            progressBar.visibility = View.GONE
-            btnApply.isEnabled = true
-            hasApplied = true
-            updateUIState()
+        return """
+            Dear ${job.clientName},
+            
+            I am excited to apply for the ${job.title} position. With my experience in ${matchingSkills.joinToString(", ")}, I am confident I can deliver high-quality results for your project.
+            
+            My relevant skills include:
+            ${matchingSkills.joinToString("\n") { "• $it" }}
+            
+            I am available to start immediately and committed to meeting your deadline of ${SimpleDateFormat("MMMM dd, yyyy").format(job.deadline)}.
+            
+            Thank you for considering my application.
+            
+            Best regards,
+            $userName
+        """.trimIndent()
+    }
 
-            // Show success message with application details
-            val successMessage = """
+    private fun showApplicationSuccessDialog(application: JobApplication) {
+        val successMessage = """
             🎉 Application Submitted!
             
             Position: ${application.jobTitle}
@@ -313,35 +407,59 @@ class JobDetailsActivity : AppCompatActivity() {
             You will be notified when the client reviews your application.
         """.trimIndent()
 
-            androidx.appcompat.app.AlertDialog.Builder(this@JobDetailsActivity)
-                .setTitle("Application Sent!")
-                .setMessage(successMessage)
-                .setPositiveButton("Great!") { dialog, which ->
-                    // Optionally navigate back or stay on the page
-                }
-                .show()
-        }
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Application Sent!")
+            .setMessage(successMessage)
+            .setPositiveButton("Great!") { dialog, which ->
+                // Optionally navigate back or stay on the page
+            }
+            .show()
     }
 
     private fun toggleSaveJob() {
-        isSaved = !isSaved
-        updateUIState()
+        val userId = sessionManager.getUserId() ?: ""
+        val jobId = currentJob?.jobId ?: return
 
-        val message = if (isSaved) "Job saved to favorites!" else "Job removed from favorites"
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        if (userId.isEmpty()) {
+            Toast.makeText(this, "Please login to save jobs", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        // TODO: Implement actual save/unsave to Firebase
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val result = if (isSaved) {
+                    firebaseService.unsaveJob(userId, jobId)
+                } else {
+                    firebaseService.saveJob(userId, jobId)
+                }
+
+                withContext(Dispatchers.Main) {
+                    if (result.isSuccess) {
+                        isSaved = !isSaved
+                        updateUIState()
+                        val message = if (isSaved) "Job saved to favorites!" else "Job removed from favorites"
+                        Toast.makeText(this@JobDetailsActivity, message, Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@JobDetailsActivity, "Failed to update saved status", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@JobDetailsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun updateUIState() {
         // Update apply button
         if (hasApplied) {
             btnApply.text = "Applied ✓"
-            btnApply.backgroundTintList = resources.getColorStateList(R.color.green)
+            btnApply.setBackgroundColor(resources.getColor(R.color.green))
             btnApply.isEnabled = false
         } else {
             btnApply.text = "Apply for Job"
-            btnApply.backgroundTintList = resources.getColorStateList(R.color.orange)
+            btnApply.setBackgroundColor(resources.getColor(R.color.orange))
             btnApply.isEnabled = true
         }
 
@@ -352,5 +470,10 @@ class JobDetailsActivity : AppCompatActivity() {
             R.drawable.ic_bookmark_border
         }
         btnSave.setImageResource(saveIcon)
+
+        // Update save button color
+        btnSave.setColorFilter(
+            resources.getColor(if (isSaved) R.color.orange else R.color.gray)
+        )
     }
 }
