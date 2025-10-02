@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Tholagig</string>
     <string name="tholagig">TholaGig</string>
+    <string name="send">Send</string>
 </resources>
