@@ -21,6 +21,11 @@ import student.projects.tholagig.Adapters.ApplicationsManagementAdapter
 import student.projects.tholagig.models.JobApplication
 import student.projects.tholagig.network.FirebaseService
 import student.projects.tholagig.network.SessionManager
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import student.projects.tholagig.dashboards.ClientDashboardActivity
+import student.projects.tholagig.jobs.MyJobsActivity
+import student.projects.tholagig.profile.ProfileActivity
+import android.content.Intent
 
 class ApplicationsManagementActivity : AppCompatActivity() {
 
@@ -31,6 +36,7 @@ class ApplicationsManagementActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var headerCard: MaterialCardView
     private lateinit var emptyStateLayout: LinearLayout
+    private lateinit var bottomNavigationView: BottomNavigationView
 
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
@@ -50,6 +56,7 @@ class ApplicationsManagementActivity : AppCompatActivity() {
         initializeViews()
         setupRecyclerView()
         setupClickListeners()
+        setupBottomNavigation()
         loadApplications()
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -64,6 +71,39 @@ class ApplicationsManagementActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         headerCard = findViewById(R.id.headerCard)
         emptyStateLayout = findViewById(R.id.emptyStateLayout)
+        bottomNavigationView = findViewById(R.id.bottom_navigation)
+    }
+
+    private fun setupBottomNavigation() {
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    val intent = Intent(this, ClientDashboardActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                R.id.nav_jobs -> {
+                    val intent = Intent(this, MyJobsActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                R.id.nav_applications -> {
+                    // Already on applications page
+                    true
+                }
+                R.id.nav_profile -> {
+                    val intent = Intent(this, ProfileActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        bottomNavigationView.selectedItemId = R.id.nav_applications
     }
 
     private fun setupRecyclerView() {
