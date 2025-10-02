@@ -22,9 +22,6 @@ import student.projects.tholagig.models.JobApplication
 import student.projects.tholagig.network.FirebaseService
 import student.projects.tholagig.network.SessionManager
 import java.util.Date
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import student.projects.tholagig.dashboards.FreelancerDashboardActivity
-import student.projects.tholagig.profile.ProfileActivity
 
 class MyApplicationsActivity : AppCompatActivity() {
 
@@ -33,8 +30,8 @@ class MyApplicationsActivity : AppCompatActivity() {
     private lateinit var tvApplicationsCount: TextView
     private lateinit var emptyState: View
     private lateinit var progressBar: ProgressBar
+
     private lateinit var toolbar: MaterialToolbar
-    private lateinit var bottomNavigationView: BottomNavigationView // ADD THIS
 
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
@@ -43,6 +40,8 @@ class MyApplicationsActivity : AppCompatActivity() {
     private val allApplications = mutableListOf<JobApplication>()
     private val filteredApplications = mutableListOf<JobApplication>()
     private val selectedStatuses = mutableSetOf<String>()
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +54,6 @@ class MyApplicationsActivity : AppCompatActivity() {
         setupToolbar()
         setupRecyclerView()
         setupClickListeners()
-        setupBottomNavigation() // ADD THIS
         loadApplications()
     }
 
@@ -66,46 +64,6 @@ class MyApplicationsActivity : AppCompatActivity() {
         emptyState = findViewById(R.id.emptyState)
         progressBar = findViewById(R.id.progressBar)
         toolbar = findViewById(R.id.toolbar)
-        bottomNavigationView = findViewById(R.id.bottom_navigation) // ADD THIS
-    }
-
-    // ADD BOTTOM NAVIGATION SETUP
-    private fun setupBottomNavigation() {
-        try {
-            bottomNavigationView.setOnNavigationItemSelectedListener { item ->
-                when (item.itemId) {
-                    R.id.nav_home -> {
-                        val intent = Intent(this, FreelancerDashboardActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        true
-                    }
-                    R.id.nav_jobs -> {
-                        val intent = Intent(this, JobBrowseActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        true
-                    }
-                    R.id.nav_applications -> {
-                        // Already on applications page
-                        true
-                    }
-                    R.id.nav_profile -> {
-                        val intent = Intent(this, ProfileActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        true
-                    }
-                    else -> false
-                }
-            }
-
-            // Set the applications item as selected
-            bottomNavigationView.selectedItemId = R.id.nav_applications
-
-        } catch (e: Exception) {
-            Log.e("BottomNav", "Bottom navigation setup failed: ${e.message}")
-        }
     }
 
     private fun setupToolbar() {
@@ -129,6 +87,7 @@ class MyApplicationsActivity : AppCompatActivity() {
 
         Log.d("MyApplications", "Toolbar setup complete")
     }
+
 
     private fun setupRecyclerView() {
         applicationsAdapter = ApplicationAdapter(
@@ -160,7 +119,9 @@ class MyApplicationsActivity : AppCompatActivity() {
             }
             applyFilters()
         }
+
     }
+
 
     private fun loadApplications() {
         progressBar.visibility = View.VISIBLE

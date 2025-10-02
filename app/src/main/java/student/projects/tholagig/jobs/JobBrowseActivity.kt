@@ -19,8 +19,6 @@ import android.widget.SearchView
 import android.content.Intent
 import android.view.View
 import android.widget.Toast
-import student.projects.tholagig.profile.ProfileActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class JobBrowseActivity : AppCompatActivity() {
 
@@ -32,7 +30,6 @@ class JobBrowseActivity : AppCompatActivity() {
     private lateinit var tvJobsCount: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var tvEmptyState: TextView
-    private lateinit var bottomNavigationView: BottomNavigationView // ADD THIS
 
     private lateinit var jobsAdapter: JobsAdapter
     private val allJobs = mutableListOf<Job>()
@@ -52,7 +49,6 @@ class JobBrowseActivity : AppCompatActivity() {
         initializeViews()
         setupRecyclerView()
         setupClickListeners()
-        setupBottomNavigation() // ADD THIS
         loadJobsFromFirebase()
     }
 
@@ -65,49 +61,9 @@ class JobBrowseActivity : AppCompatActivity() {
         tvJobsCount = findViewById(R.id.tvJobsCount)
         progressBar = findViewById(R.id.progressBar)
         tvEmptyState = findViewById(R.id.tvEmptyState)
-        bottomNavigationView = findViewById(R.id.bottom_navigation) // ADD THIS
 
         // REMOVE THIS LINE: setupCategoryChips()
         // Or keep it but make the function empty
-    }
-
-    // ADD BOTTOM NAVIGATION SETUP
-    private fun setupBottomNavigation() {
-        try {
-            bottomNavigationView.setOnNavigationItemSelectedListener { item ->
-                when (item.itemId) {
-                    R.id.nav_home -> {
-                        val intent = Intent(this, student.projects.tholagig.dashboards.FreelancerDashboardActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        true
-                    }
-                    R.id.nav_jobs -> {
-                        // Already on jobs page
-                        true
-                    }
-                    R.id.nav_applications -> {
-                        val intent = Intent(this, student.projects.tholagig.jobs.MyApplicationsActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        true
-                    }
-                    R.id.nav_profile -> {
-                        // FIXED: Now using the correct ProfileActivity
-                        val intent = Intent(this, student.projects.tholagig.profile.ProfileActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        true
-                    }
-                    else -> false
-                }
-            }
-
-            bottomNavigationView.selectedItemId = R.id.nav_jobs
-
-        } catch (e: Exception) {
-            Log.e("BottomNav", "Bottom navigation setup failed: ${e.message}")
-        }
     }
 
     // Either remove this function completely OR make it empty:
