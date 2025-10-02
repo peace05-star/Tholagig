@@ -13,6 +13,7 @@ import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.*
 import student.projects.tholagig.R
 import student.projects.tholagig.Adapters.JobsAdapter
+import student.projects.tholagig.dialogs.ApplicationFormDialog
 import student.projects.tholagig.models.Job
 import student.projects.tholagig.models.JobApplication
 import student.projects.tholagig.network.FirebaseService
@@ -329,35 +330,89 @@ class JobDetailsActivity : AppCompatActivity() {
             return
         }
 
+        // Show loading while fetching user data
         progressBar.visibility = View.VISIBLE
         btnApply.isEnabled = false
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Get user's actual name from profile
+                // Get user data for the form
                 val userResult = firebaseService.getUserById(userId)
-                val userName = if (userResult.isSuccess) {
-                    userResult.getOrNull()?.fullName ?: "Freelancer"
-                } else {
-                    "Freelancer"
-                }
-
-                // Get freelancer skills for the cover letter
                 val skillsResult = firebaseService.getFreelancerSkills(userId)
-                val userSkills = skillsResult.getOrNull() ?: emptyList()
 
-                // Create job application
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    btnApply.isEnabled = true
+
+                    if (userResult.isSuccess && skillsResult.isSuccess) {
+                        val user = userResult.getOrNull()
+                        val userSkills = skillsResult.getOrNull() ?: emptyList()
+                        val userName = user?.fullName ?: "Freelancer"
+
+                        // Show application form dialog
+                        showApplicationForm(job, userSkills, userName, userEmail, userId)
+                    } else {
+                        Toast.makeText(this@JobDetailsActivity, "Failed to load profile data", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    btnApply.isEnabled = true
+                    Toast.makeText(this@JobDetailsActivity, "Error loading profile: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun showApplicationForm(job: Job, userSkills: List<String>, userName: String, userEmail: String, userId: String) {
+        val dialog = ApplicationFormDialog.newInstance(
+            job = job,
+            userSkills = userSkills,
+            userName = userName,
+            onApply = { coverLetter, proposedBudget, estimatedTime ->
+                submitApplicationWithFormData(
+                    job,
+                    userId,
+                    userEmail,
+                    userName,
+                    userSkills,
+                    coverLetter,
+                    proposedBudget,
+                    estimatedTime
+                )
+            }
+        )
+
+        dialog.show(supportFragmentManager, "ApplicationFormDialog")
+    }
+
+    private fun submitApplicationWithFormData(
+        job: Job,
+        userId: String,
+        userEmail: String,
+        userName: String,
+        userSkills: List<String>,
+        coverLetter: String,
+        proposedBudget: Double,
+        estimatedTime: String
+    ) {
+        progressBar.visibility = View.VISIBLE
+        btnApply.isEnabled = false
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
                 val application = JobApplication(
                     jobId = job.jobId,
                     freelancerId = userId,
                     freelancerName = userName,
                     freelancerEmail = userEmail,
-                    coverLetter = generateCoverLetter(job, userName, userSkills),
-                    proposedBudget = job.budget,
+                    coverLetter = coverLetter,
+                    proposedBudget = proposedBudget,
                     clientId = job.clientId,
                     jobTitle = job.title,
                     clientName = job.clientName,
-                    estimatedTime = "2-4 weeks", // You can make this dynamic
+                    estimatedTime = estimatedTime,
                     freelancerSkills = userSkills
                 )
 
@@ -370,7 +425,7 @@ class JobDetailsActivity : AppCompatActivity() {
                     if (result.isSuccess) {
                         hasApplied = true
                         updateUIState()
-                        showApplicationSuccessDialog(application)
+                        showApplicationSuccessDialog(result.getOrNull()!!)
                     } else {
                         Toast.makeText(
                             this@JobDetailsActivity,
@@ -379,7 +434,6 @@ class JobDetailsActivity : AppCompatActivity() {
                         ).show()
                     }
                 }
-
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
@@ -394,46 +448,35 @@ class JobDetailsActivity : AppCompatActivity() {
         }
     }
 
-    private fun generateCoverLetter(job: Job, userName: String, skills: List<String>): String {
-        val matchingSkills = skills.intersect(job.skillsRequired.toSet())
-
-        return """
-            Dear ${job.clientName},
-            
-            I am excited to apply for the ${job.title} position. With my experience in ${matchingSkills.joinToString(", ")}, I am confident I can deliver high-quality results for your project.
-            
-            My relevant skills include:
-            ${matchingSkills.joinToString("\n") { "• $it" }}
-            
-            I am available to start immediately and committed to meeting your deadline of ${SimpleDateFormat("MMMM dd, yyyy").format(job.deadline)}.
-            
-            Thank you for considering my application.
-            
-            Best regards,
-            $userName
-        """.trimIndent()
-    }
-
     private fun showApplicationSuccessDialog(application: JobApplication) {
         val successMessage = """
-            🎉 Application Submitted!
-            
-            Position: ${application.jobTitle}
-            Client: ${application.clientName}
-            Proposed Budget: R ${application.proposedBudget.toInt()}
-            
-            You will be notified when the client reviews your application.
-        """.trimIndent()
+        🎉 Application Submitted Successfully!
+        
+        Position: ${application.jobTitle}
+        Client: ${application.clientName}
+        Proposed Budget: R ${application.proposedBudget.toInt()}
+        Estimated Time: ${application.estimatedTime}
+        
+        Your application has been sent to the client. 
+        You will be notified when they review your application.
+        
+        You can track your application status in the "My Applications" section.
+    """.trimIndent()
 
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Application Sent!")
             .setMessage(successMessage)
-            .setPositiveButton("Great!") { dialog, which ->
-                // Optionally navigate back or stay on the page
+            .setPositiveButton("View My Applications") { dialog, which ->
+                // Navigate to MyApplications activity
+                val intent = Intent(this, student.projects.tholagig.jobs.MyApplicationsActivity::class.java)
+                startActivity(intent)
             }
+            .setNegativeButton("Continue Browsing") { dialog, which ->
+                // Stay on current page
+            }
+            .setCancelable(false)
             .show()
     }
-
     private fun toggleSaveJob() {
         val userId = sessionManager.getUserId() ?: ""
         val jobId = currentJob?.jobId ?: return

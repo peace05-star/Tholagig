@@ -15,6 +15,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Tholagig">
         <activity
+            android:name=".ApplicationFormDialog"
+            android:exported="false" />
+        <activity
+            android:name=".Adapters.ClientApplicationsActivity"
+            android:exported="false" />
+        <activity
             android:name=".jobs.ApplicationDetailsActivity"
             android:exported="false" />
         <activity
@@ -34,11 +40,9 @@
         <activity android:name=".jobs.JobBrowseActivity" />
         <activity android:name=".jobs.JobDetailsActivity" /> <!-- Profile Activity -->
         <activity android:name=".profile.ProfileActivity" />
-
         <activity android:name=".jobs.MyJobsActivity" />
         <activity android:name=".jobs.CreateJobActivity" />
         <activity android:name=".jobs.ApplicationsManagementActivity" />
-
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">
