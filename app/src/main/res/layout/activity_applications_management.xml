@@ -175,6 +175,15 @@
                 android:textSize="14sp"
                 android:textColor="@color/gray_dark" />
 
+            <!-- Bottom Navigation -->
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottom_navigation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                app:menu="@menu/bottom_nav_freelancer"
+                app:itemIconTint="@color/orange"
+                app:itemTextColor="@color/orange" />
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>

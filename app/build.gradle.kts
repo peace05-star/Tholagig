@@ -10,8 +10,8 @@ android {
 
     defaultConfig {
         applicationId = "student.projects.tholagig"
-        minSdk = 35
-        targetSdk = 36
+        minSdk = 21
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 

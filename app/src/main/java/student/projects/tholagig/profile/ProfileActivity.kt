@@ -40,6 +40,8 @@ class ProfileActivity : AppCompatActivity() {
 
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
+
+
     private var currentUser: User? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
