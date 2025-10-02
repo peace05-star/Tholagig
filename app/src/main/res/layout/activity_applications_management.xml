@@ -1,182 +1,202 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/gradient_bg"
-    android:paddingTop="?attr/actionBarSize">
+    android:background="@drawable/gradient_bg">
 
-    <!-- Modern Header Card -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/headerCard"
+
+    <!-- Bottom Navigation - Fixed at bottom -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="4dp"
-        app:cardBackgroundColor="@color/white"
-        android:layout_marginBottom="8dp">
+        android:layout_alignParentBottom="true"
+        android:background="@color/white"
+        app:menu="@menu/bottom_nav_freelancer"
+        app:itemIconTint="@color/orange"
+        app:itemTextColor="@color/orange"  />
+    <!-- Main Content Area -->
+    <LinearLayout
+        android:id="@+id/rootLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottom_navigation"
+        android:orientation="vertical"
+        android:background="@drawable/gradient_bg"
+        android:paddingTop="?attr/actionBarSize">
 
-        <LinearLayout
+        <!-- Modern Header Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/headerCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/white"
+            android:layout_marginBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Applications Count with icon -->
+                <TextView
+                    android:id="@+id/tvApplicationsCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📥 Applications"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary_color"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Status Filter Chips - Modern Style -->
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="false"
+                    app:selectionRequired="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipAll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="All"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/chip_state_selector"
+                        app:chipStrokeColor="@color/primary_color"
+                        app:chipStrokeWidth="1dp"
+                        app:checkedIconEnabled="false"
+                        app:chipCornerRadius="12dp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipPending"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⏳ Pending"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/chip_state_selector"
+                        app:chipStrokeColor="@color/warning_color"
+                        app:chipStrokeWidth="1dp"
+                        app:checkedIconEnabled="false"
+                        app:chipCornerRadius="12dp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipAccepted"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✅ Hired"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/chip_state_selector"
+                        app:chipStrokeColor="@color/success_color"
+                        app:chipStrokeWidth="1dp"
+                        app:checkedIconEnabled="false"
+                        app:chipCornerRadius="12dp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipRejected"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="❌ Rejected"
+                        android:textSize="12sp"
+                        app:chipBackgroundColor="@color/chip_state_selector"
+                        app:chipStrokeColor="@color/error_color"
+                        app:chipStrokeWidth="1dp"
+                        app:checkedIconEnabled="false"
+                        app:chipCornerRadius="12dp" />
+
+                </com.google.android.material.chip.ChipGroup>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Applications List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvApplications"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:clipToPadding="false" />
+
+        <!-- Modern Empty State -->
+        <LinearLayout
+            android:id="@+id/emptyStateLayout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="32dp"
+            android:visibility="gone">
 
-            <!-- Applications Count with icon -->
             <TextView
-                android:id="@+id/tvApplicationsCount"
+                android:id="@+id/tvEmptyState"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="📥 Applications"
-                android:textSize="20sp"
+                android:text="No applications found"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/primary_color"
-                android:layout_marginBottom="16dp" />
+                android:textColor="@color/gray_dark"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp" />
 
-            <!-- Status Filter Chips - Modern Style -->
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupStatus"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:singleSelection="false"
-                app:selectionRequired="true">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipAll"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="All"
-                    android:textSize="12sp"
-                    app:chipBackgroundColor="@color/chip_state_selector"
-                    app:chipStrokeColor="@color/primary_color"
-                    app:chipStrokeWidth="1dp"
-                    app:checkedIconEnabled="false"
-                    app:chipCornerRadius="12dp" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipPending"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="⏳ Pending"
-                    android:textSize="12sp"
-                    app:chipBackgroundColor="@color/chip_state_selector"
-                    app:chipStrokeColor="@color/warning_color"
-                    app:chipStrokeWidth="1dp"
-                    app:checkedIconEnabled="false"
-                    app:chipCornerRadius="12dp" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipAccepted"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="✅ Hired"
-                    android:textSize="12sp"
-                    app:chipBackgroundColor="@color/chip_state_selector"
-                    app:chipStrokeColor="@color/success_color"
-                    app:chipStrokeWidth="1dp"
-                    app:checkedIconEnabled="false"
-                    app:chipCornerRadius="12dp" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipRejected"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="❌ Rejected"
-                    android:textSize="12sp"
-                    app:chipBackgroundColor="@color/chip_state_selector"
-                    app:chipStrokeColor="@color/error_color"
-                    app:chipStrokeWidth="1dp"
-                    app:checkedIconEnabled="false"
-                    app:chipCornerRadius="12dp" />
-
-            </com.google.android.material.chip.ChipGroup>
+                android:text="Applications will appear here when freelancers apply to your jobs"
+                android:textSize="14sp"
+                android:textColor="@color/gray"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginTop="8dp" />
 
         </LinearLayout>
 
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- Applications List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvApplications"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:clipToPadding="false" />
-
-    <!-- Modern Empty State -->
-    <LinearLayout
-        android:id="@+id/emptyStateLayout"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="32dp"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/tvEmptyState"
-            android:layout_width="match_parent"
+        <!-- Modern Progress Bar -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/progressCard"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No applications found"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/gray_dark"
-            android:gravity="center"
-            android:lineSpacingExtra="4dp" />
+            android:layout_gravity="center"
+            android:layout_margin="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            android:visibility="gone">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Applications will appear here when freelancers apply to your jobs"
-            android:textSize="14sp"
-            android:textColor="@color/gray"
-            android:gravity="center"
-            android:lineSpacingExtra="4dp"
-            android:layout_marginTop="8dp" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="20dp"
+                android:gravity="center">
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="12dp"
+                    android:indeterminateTint="@color/primary_color" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Loading applications..."
+                    android:textSize="14sp"
+                    android:textColor="@color/gray_dark" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 
-    <!-- Modern Progress Bar -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/progressCard"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="20dp"
-            android:gravity="center">
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="12dp"
-                android:indeterminateTint="@color/primary_color" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Loading applications..."
-                android:textSize="14sp"
-                android:textColor="@color/gray_dark" />
-
-        </LinearLayout>
-
-    </com.google.android.material.card.MaterialCardView>
-
-</LinearLayout>
+</RelativeLayout>

@@ -24,6 +24,7 @@ import student.projects.tholagig.network.SessionManager
 import java.util.Date
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import student.projects.tholagig.dashboards.FreelancerDashboardActivity
+import student.projects.tholagig.messaging.MessagesActivity
 import student.projects.tholagig.profile.ProfileActivity
 
 class MyApplicationsActivity : AppCompatActivity() {
@@ -95,8 +96,14 @@ class MyApplicationsActivity : AppCompatActivity() {
                         finish()
                         true
                     }
+                    R.id.nav_messages -> {
+                        startActivity(Intent(this, MessagesActivity::class.java))
+                        finish()
+                        true
+                    }
                     else -> false
                 }
+
             }
 
             bottomNavigationView.selectedItemId = R.id.nav_applications
