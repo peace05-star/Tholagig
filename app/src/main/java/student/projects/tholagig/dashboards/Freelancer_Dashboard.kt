@@ -22,6 +22,7 @@ import student.projects.tholagig.network.FirebaseService // ADD THIS IMPORT
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import android.util.Log
 import kotlinx.coroutines.* // ADD THIS IMPORT
+import student.projects.tholagig.messaging.MessagesActivity
 
 class FreelancerDashboardActivity : AppCompatActivity() {
 
@@ -94,6 +95,11 @@ class FreelancerDashboardActivity : AppCompatActivity() {
                     R.id.nav_profile -> {
                         val intent = Intent(this, ProfileActivity::class.java)
                         startActivity(intent)
+                        true
+                    }
+                    R.id.nav_messages -> {
+                        startActivity(Intent(this, MessagesActivity::class.java))
+                        finish()
                         true
                     }
                     else -> false
