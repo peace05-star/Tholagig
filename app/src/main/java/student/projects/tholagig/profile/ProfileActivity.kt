@@ -41,6 +41,8 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
 
+    private lateinit var btnBack: ImageButton
+
 
     private var currentUser: User? = null
 
@@ -73,6 +75,7 @@ class ProfileActivity : AppCompatActivity() {
         btnUpdateProfile = findViewById(R.id.btnUpdateProfile)
         btnChangePassword = findViewById(R.id.btnChangePassword)
         btnLogout = findViewById(R.id.btnLogout)
+        btnBack = findViewById(R.id.btnBack)
         progressBar = findViewById(R.id.progressBar)
         bottomNavigationView = findViewById(R.id.bottom_navigation)
     }
@@ -110,6 +113,11 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
+        // Back button
+        btnBack.setOnClickListener {
+            onBackPressed()
+        }
+
         btnUpdateProfile.setOnClickListener {
             updateProfile()
         }

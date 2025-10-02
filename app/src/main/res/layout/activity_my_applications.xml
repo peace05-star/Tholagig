@@ -1,174 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:orientation="vertical"
+    android:background="@color/white"
+    android:paddingTop="?attr/actionBarSize">
 
-    <!-- Bottom Navigation - Fixed at bottom -->
+    <!-- Toolbar with custom title -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@drawable/bg_gradient"
+        android:elevation="4dp"
+        android:theme="?attr/actionBarTheme"
+        app:navigationIcon="@drawable/ic_arrow_back">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="My Applications"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_gravity="center" />
+
+    </com.google.android.material.appbar.MaterialToolbar>
+    <!-- Status Filter Chips -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        app:singleSelection="false">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="All"
+            android:checked="true"
+            style="@style/Widget.Material3.Chip.Filter" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipPending"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pending"
+            style="@style/Widget.Material3.Chip.Filter" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipAccepted"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accepted"
+            style="@style/Widget.Material3.Chip.Filter" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipRejected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rejected"
+            style="@style/Widget.Material3.Chip.Filter" />
+
+    </com.google.android.material.chip.ChipGroup>
+
+    <!-- Applications Count -->
+    <TextView
+        android:id="@+id/tvApplicationsCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Loading applications..."
+        android:textSize="14sp"
+        android:textColor="@color/gray"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp" />
+
+    <!-- Applications List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvApplications"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp" />
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/emptyState"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="48dp">
+
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_applications_empty"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No Applications Yet"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start applying to jobs to see your applications here"
+            android:textColor="@color/gray"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Browse Jobs"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/orange" />
+
+    </LinearLayout>
+
+    <!-- Progress Bar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginVertical="16dp"
+        android:visibility="gone" />
+
+    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:background="@color/white"
         app:menu="@menu/bottom_nav_freelancer"
         app:itemIconTint="@color/orange"
         app:itemTextColor="@color/orange" />
-    <!-- Scrollable Content Area -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/bottom_navigation"
-        android:orientation="vertical"
-        android:background="@color/white">
 
-        <!-- Toolbar with custom title -->
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@drawable/bg_gradient"
-            android:elevation="4dp"
-            app:navigationIcon="@drawable/ic_arrow_back">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="My Applications"
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_gravity="center" />
-
-        </com.google.android.material.appbar.MaterialToolbar>
-
-        <!-- Status Filter Chips -->
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chipGroupStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="12dp"
-            app:singleSelection="false">
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipAll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="All"
-                android:checked="true"
-                style="@style/Widget.Material3.Chip.Filter" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipPending"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Pending"
-                style="@style/Widget.Material3.Chip.Filter" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipAccepted"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Accepted"
-                style="@style/Widget.Material3.Chip.Filter" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipRejected"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Rejected"
-                style="@style/Widget.Material3.Chip.Filter" />
-
-        </com.google.android.material.chip.ChipGroup>
-
-        <!-- Applications Count -->
-        <TextView
-            android:id="@+id/tvApplicationsCount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Loading applications..."
-            android:textSize="14sp"
-            android:textColor="@color/gray"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="8dp" />
-
-        <!-- Main Content Area -->
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-
-            <!-- Applications List -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvApplications"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="8dp"
-                android:visibility="visible" />
-
-            <!-- Empty State -->
-            <LinearLayout
-                android:id="@+id/emptyState"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:visibility="gone"
-                android:padding="48dp"
-                android:background="@color/white">
-
-                <ImageView
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
-                    android:src="@drawable/ic_applications_empty"
-                    android:contentDescription="No applications"
-                    android:layout_marginBottom="24dp" />
-
-                <TextView
-                    android:id="@+id/emptyStateText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="No Applications Yet"
-                    android:textColor="@color/black"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:gravity="center"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:id="@+id/emptyStateSubtext"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Start applying to jobs to see your applications here"
-                    android:textColor="@color/gray"
-                    android:textSize="14sp"
-                    android:gravity="center"
-                    android:layout_marginBottom="24dp" />
-
-                <Button
-                    android:id="@+id/browseJobsButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Browse Jobs"
-                    android:textColor="@color/white"
-                    android:backgroundTint="@color/orange"
-                    android:paddingHorizontal="24dp"
-                    android:paddingVertical="12dp" />
-
-            </LinearLayout>
-
-            <!-- Progress Bar -->
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:visibility="gone" />
-
-        </RelativeLayout>
-
-    </LinearLayout>
-
-</RelativeLayout>
+</LinearLayout>

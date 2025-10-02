@@ -14,17 +14,14 @@ import student.projects.tholagig.Adapters.JobsAdapter
 import student.projects.tholagig.jobs.JobBrowseActivity
 import student.projects.tholagig.jobs.JobDetailsActivity
 import student.projects.tholagig.models.Job
-import student.projects.tholagig.models.JobApplication
 import student.projects.tholagig.profile.ProfileActivity
 import android.content.Intent
 import student.projects.tholagig.jobs.MyApplicationsActivity
 import student.projects.tholagig.network.SessionManager
-import student.projects.tholagig.network.FirebaseService
+import student.projects.tholagig.network.FirebaseService // ADD THIS IMPORT
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import android.util.Log
-import kotlinx.coroutines.*
-import java.text.NumberFormat
-import java.util.*
+import kotlinx.coroutines.* // ADD THIS IMPORT
 
 class FreelancerDashboardActivity : AppCompatActivity() {
 
@@ -37,27 +34,27 @@ class FreelancerDashboardActivity : AppCompatActivity() {
     private lateinit var btnProfile: ImageButton
     private lateinit var rvJobs: RecyclerView
     private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var progressBar: View // ADD PROGRESS BAR IF YOU HAVE ONE
 
     private lateinit var jobsAdapter: JobsAdapter
     private lateinit var sessionManager: SessionManager
-    private lateinit var firebaseService: FirebaseService
-
+    private lateinit var firebaseService: FirebaseService // ADD THIS
     private val jobList = mutableListOf<Job>()
-    private val allApplications = mutableListOf<JobApplication>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_freelancer_dashboard)
 
         sessionManager = SessionManager(this)
-        firebaseService = FirebaseService()
+        firebaseService = FirebaseService() // INITIALIZE FIREBASE SERVICE
 
         initializeViews()
         setupRecyclerView()
         setupClickListeners()
         setupBottomNavigation()
         loadUserData()
-        loadRealData()
+        loadJobsFromFirebase() // REPLACE loadMockData() WITH THIS
+        loadDashboardStats() // ADD THIS FOR STATS
     }
 
     private fun initializeViews() {
@@ -70,6 +67,8 @@ class FreelancerDashboardActivity : AppCompatActivity() {
         btnProfile = findViewById(R.id.btnProfile)
         rvJobs = findViewById(R.id.rvJobs)
         bottomNavigationView = findViewById(R.id.bottom_navigation)
+        // If you have a progress bar, initialize it here
+        // progressBar = findViewById(R.id.progressBar)
     }
 
     private fun setupBottomNavigation() {
@@ -78,76 +77,39 @@ class FreelancerDashboardActivity : AppCompatActivity() {
                 when (item.itemId) {
                     R.id.nav_home -> {
                         // Already on home, just refresh the data
-                        loadRealData()
+                        loadJobsFromFirebase()
+                        loadDashboardStats()
                         true
                     }
                     R.id.nav_jobs -> {
-                        // Navigate to job browse
                         val intent = Intent(this, JobBrowseActivity::class.java)
                         startActivity(intent)
-                        overridePendingTransition(0, 0)
                         true
                     }
                     R.id.nav_applications -> {
-                        // Navigate to my applications
                         val intent = Intent(this, MyApplicationsActivity::class.java)
                         startActivity(intent)
-                        overridePendingTransition(0, 0)
                         true
                     }
                     R.id.nav_profile -> {
-                        // Navigate to profile
                         val intent = Intent(this, ProfileActivity::class.java)
                         startActivity(intent)
-                        overridePendingTransition(0, 0)
                         true
                     }
                     else -> false
                 }
             }
 
-            // Set the home item as selected by default
             bottomNavigationView.selectedItemId = R.id.nav_home
 
         } catch (e: Exception) {
             Log.e("BottomNav", "Bottom navigation setup failed: ${e.message}")
-            Toast.makeText(this, "Navigation error", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun loadUserData() {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val userId = sessionManager.getUserId()
-                if (!userId.isNullOrEmpty()) {
-                    val userResult = firebaseService.getUserById(userId)
-                    if (userResult.isSuccess) {
-                        val user = userResult.getOrNull()
-                        withContext(Dispatchers.Main) {
-                            val displayName = user?.fullName ?: sessionManager.getUserName() ?: extractNameFromEmail(sessionManager.getEmail() ?: "User")
-                            tvWelcome.text = "Welcome, $displayName!"
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            fallbackUserData()
-                        }
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        fallbackUserData()
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    fallbackUserData()
-                }
-            }
-        }
-    }
-
-    private fun fallbackUserData() {
         val userEmail = sessionManager.getEmail() ?: "User"
-        val userName = sessionManager.getUserName() ?: extractNameFromEmail(userEmail)
+        val userName = extractNameFromEmail(userEmail)
         tvWelcome.text = "Welcome, $userName!"
     }
 
@@ -184,226 +146,111 @@ class FreelancerDashboardActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadRealData() {
-        // Show loading state
-        tvAppliedCount.text = "0"
-        tvActiveCount.text = "0"
-        tvEarnings.text = "R 0"
+    private fun loadJobsFromFirebase() {
+        // Show loading state if you have a progress bar
+        // progressBar.visibility = View.VISIBLE
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val userId = sessionManager.getUserId()
-                if (userId.isNullOrEmpty()) {
-                    withContext(Dispatchers.Main) {
-                        loadMockDataAsFallback("User not logged in")
-                    }
-                    return@launch
-                }
-
-                // Fetch all data in parallel
-                val jobsDeferred = async { firebaseService.getJobs() }
-                val applicationsDeferred = async { firebaseService.getApplicationsByFreelancer(userId) }
-                val statsDeferred = async { firebaseService.getFreelancerStats(userId) }
-
-                // Wait for all requests
-                val jobsResult = jobsDeferred.await()
-                val applicationsResult = applicationsDeferred.await()
-                val statsResult = statsDeferred.await()
+                Log.d("Dashboard", "🟡 Loading featured jobs from Firebase")
+                val result = firebaseService.getJobs()
 
                 withContext(Dispatchers.Main) {
-                    // Handle jobs data
-                    if (jobsResult.isSuccess) {
-                        val allJobs = jobsResult.getOrNull() ?: emptyList()
-                        updateRecommendedJobs(allJobs)
-                    } else {
-                        Log.e("Dashboard", "Failed to load jobs: ${jobsResult.exceptionOrNull()?.message}")
-                        loadMockJobsAsFallback()
-                    }
+                    // progressBar.visibility = View.GONE
 
-                    // Handle applications and stats
+                    if (result.isSuccess) {
+                        val jobs = result.getOrNull() ?: emptyList()
+                        Log.d("Dashboard", "🟢 Loaded ${jobs.size} jobs from Firebase")
+
+                        jobList.clear()
+
+                        // Show only featured/recent jobs (limit to 3-5 for dashboard)
+                        val featuredJobs = jobs
+                            .sortedByDescending { it.postedAt } // Show newest first
+                            .take(4) // Limit to 4 jobs for dashboard
+
+                        jobList.addAll(featuredJobs)
+                        jobsAdapter.notifyDataSetChanged()
+
+                        if (featuredJobs.isEmpty()) {
+                            // Show empty state if no jobs
+                            Toast.makeText(
+                                this@FreelancerDashboardActivity,
+                                "No jobs available at the moment",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } else {
+                        val error = result.exceptionOrNull()?.message ?: "Unknown error"
+                        Log.e("Dashboard", "🔴 Failed to load jobs: $error")
+                        Toast.makeText(
+                            this@FreelancerDashboardActivity,
+                            "Failed to load jobs",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("Dashboard", "💥 Error loading jobs: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    // progressBar.visibility = View.GONE
+                    Toast.makeText(
+                        this@FreelancerDashboardActivity,
+                        "Network error: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+    private fun loadDashboardStats() {
+        val userId = sessionManager.getUserId() ?: return
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Load user's applications to calculate stats
+                val applicationsResult = firebaseService.getApplicationsByFreelancer(userId)
+
+                withContext(Dispatchers.Main) {
                     if (applicationsResult.isSuccess) {
-                        allApplications.clear()
-                        allApplications.addAll(applicationsResult.getOrNull() ?: emptyList())
-                    }
+                        val applications = applicationsResult.getOrNull() ?: emptyList()
 
-                    if (statsResult.isSuccess) {
-                        updateDashboardStats(statsResult.getOrNull())
+                        // Calculate statistics
+                        val totalApplied = applications.size
+                        val activeApplications = applications.count { it.status == "pending" }
+                        val acceptedApplications = applications.count { it.status == "accepted" }
+
+                        // Calculate earnings (sum of accepted application budgets)
+                        val totalEarnings = applications
+                            .filter { it.status == "accepted" }
+                            .sumOf { it.proposedBudget }
+
+                        // Update UI with real data
+                        tvAppliedCount.text = totalApplied.toString()
+                        tvActiveCount.text = activeApplications.toString()
+                        tvEarnings.text = "R ${"%.2f".format(totalEarnings)}"
+
+                        Log.d("Dashboard", "📊 Stats: $totalApplied applied, $activeApplications active, R$totalEarnings earnings")
                     } else {
-                        // Fallback to calculating stats from applications
-                        updateDashboardStatsFromApplications()
-                        Log.e("Dashboard", "Failed to load stats: ${statsResult.exceptionOrNull()?.message}")
-                    }
-                }
-
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    loadMockDataAsFallback("Error: ${e.message}")
-                    Log.e("Dashboard", "Error loading data: ${e.message}")
-                }
-            }
-        }
-    }
-
-    private fun updateRecommendedJobs(allJobs: List<Job>) {
-        jobList.clear()
-
-        // Get user skills for personalized recommendations
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val userId = sessionManager.getUserId()
-                val recommendedJobs = if (!userId.isNullOrEmpty()) {
-                    val skillsResult = firebaseService.getFreelancerSkills(userId)
-                    if (skillsResult.isSuccess) {
-                        val userSkills = skillsResult.getOrNull() ?: emptyList()
-                        getPersonalizedJobs(allJobs, userSkills)
-                    } else {
-                        getDefaultRecommendedJobs(allJobs)
-                    }
-                } else {
-                    getDefaultRecommendedJobs(allJobs)
-                }
-
-                withContext(Dispatchers.Main) {
-                    jobList.addAll(recommendedJobs)
-                    jobsAdapter.notifyDataSetChanged()
-
-                    if (jobList.isEmpty()) {
-                        // Show empty state or fallback to default jobs
-                        loadDefaultJobsAsFallback(allJobs)
+                        // Fallback to placeholder stats if data loading fails
+                        setPlaceholderStats()
                     }
                 }
             } catch (e: Exception) {
+                Log.e("Dashboard", "💥 Error loading stats: ${e.message}", e)
                 withContext(Dispatchers.Main) {
-                    loadDefaultJobsAsFallback(allJobs)
+                    setPlaceholderStats()
                 }
             }
         }
     }
 
-    private fun getPersonalizedJobs(allJobs: List<Job>, userSkills: List<String>): List<Job> {
-        return if (userSkills.isNotEmpty()) {
-            // Filter jobs that match user skills
-            val matchingJobs = allJobs.filter { job ->
-                job.skillsRequired.any { requiredSkill ->
-                    userSkills.any { userSkill ->
-                        userSkill.contains(requiredSkill, ignoreCase = true) ||
-                                requiredSkill.contains(userSkill, ignoreCase = true)
-                    }
-                }
-            }
-
-            // If we have matching jobs, return them sorted by relevance
-            if (matchingJobs.isNotEmpty()) {
-                matchingJobs.sortedByDescending { it.postedAt ?: it.createdDate ?: Date() }.take(3)
-            } else {
-                getDefaultRecommendedJobs(allJobs)
-            }
-        } else {
-            getDefaultRecommendedJobs(allJobs)
-        }
-    }
-
-    private fun getDefaultRecommendedJobs(allJobs: List<Job>): List<Job> {
-        // Return newest open jobs
-        return allJobs
-            .filter { it.status == "open" }
-            .sortedByDescending { it.postedAt ?: it.createdDate ?: Date() }
-            .take(3)
-    }
-
-    private fun loadDefaultJobsAsFallback(allJobs: List<Job>) {
-        val defaultJobs = getDefaultRecommendedJobs(allJobs)
-        jobList.clear()
-        jobList.addAll(defaultJobs)
-        jobsAdapter.notifyDataSetChanged()
-
-        if (jobList.isEmpty()) {
-            // Ultimate fallback - load mock jobs
-            loadMockJobsAsFallback()
-        }
-    }
-
-    private fun updateDashboardStats(stats: FirebaseService.FreelancerStats?) {
-        if (stats != null) {
-            tvAppliedCount.text = stats.totalApplications.toString()
-            tvActiveCount.text = stats.acceptedApplications.toString()
-            tvEarnings.text = formatCurrency(stats.totalEarnings)
-        } else {
-            updateDashboardStatsFromApplications()
-        }
-    }
-
-    private fun updateDashboardStatsFromApplications() {
-        val totalApplications = allApplications.size
-        val activeJobs = allApplications.count { it.status == "accepted" }
-        val totalEarnings = allApplications
-            .filter { it.status == "accepted" }
-            .sumOf { it.proposedBudget }
-
-        tvAppliedCount.text = totalApplications.toString()
-        tvActiveCount.text = activeJobs.toString()
-        tvEarnings.text = formatCurrency(totalEarnings)
-    }
-
-    private fun formatCurrency(amount: Double): String {
-        return try {
-            val format = NumberFormat.getCurrencyInstance()
-            format.maximumFractionDigits = 0
-            format.currency = Currency.getInstance("ZAR")
-            format.format(amount)
-        } catch (e: Exception) {
-            "R ${amount.toInt()}"
-        }
-    }
-
-    // Fallback methods
-    private fun loadMockJobsAsFallback() {
-        jobList.clear()
-        jobList.addAll(createMockJobs())
-        jobsAdapter.notifyDataSetChanged()
-    }
-
-    private fun loadMockDataAsFallback(errorMessage: String) {
-        loadMockJobsAsFallback()
-        updateMockStats()
-        Toast.makeText(this, "Using demo data - $errorMessage", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun updateMockStats() {
+    private fun setPlaceholderStats() {
+        // Use placeholder data if real data fails to load
         tvAppliedCount.text = "0"
         tvActiveCount.text = "0"
-        tvEarnings.text = "R 0"
-    }
-
-    private fun createMockJobs(): List<Job> {
-        return listOf(
-            Job(
-                jobId = "1",
-                title = "Mobile App Developer",
-                clientName = "Tech Solutions SA",
-                description = "Need experienced Kotlin/Android developer for e-commerce app",
-                budget = 15000.0,
-                category = "Mobile Development",
-                skillsRequired = listOf("Kotlin", "Android SDK", "Firebase"),
-                location = "Remote",
-                deadline = Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000),
-                postedAt = Date(),
-                status = "open"
-            ),
-            Job(
-                jobId = "2",
-                title = "UI/UX Designer",
-                clientName = "Creative Agency",
-                description = "Design modern UI for financial application",
-                budget = 12000.0,
-                category = "Design",
-                skillsRequired = listOf("Figma", "Adobe XD", "UI Design"),
-                location = "Cape Town",
-                deadline = Date(System.currentTimeMillis() + 5 * 24 * 60 * 60 * 1000),
-                postedAt = Date(),
-                status = "open"
-            )
-        )
+        tvEarnings.text = "R 0.00"
     }
 
     private fun onJobItemClick(job: Job) {
@@ -431,8 +278,8 @@ class FreelancerDashboardActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Refresh data when returning to this activity
-        bottomNavigationView.selectedItemId = R.id.nav_home
-        loadRealData()
+        // Refresh data when returning to dashboard
+        loadJobsFromFirebase()
+        loadDashboardStats()
     }
 }
