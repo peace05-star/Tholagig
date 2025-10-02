@@ -13,6 +13,7 @@ import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.*
 import student.projects.tholagig.R
 import student.projects.tholagig.Adapters.JobsAdapter
+import student.projects.tholagig.dialogs.ApplicationFormDialog
 import student.projects.tholagig.models.Job
 import student.projects.tholagig.models.JobApplication
 import student.projects.tholagig.network.FirebaseService
@@ -55,6 +56,8 @@ class JobDetailsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_job_details)
 
         sessionManager = SessionManager(this)
+
+
         firebaseService = FirebaseService()
 
         initializeViews()
@@ -63,6 +66,7 @@ class JobDetailsActivity : AppCompatActivity() {
         loadJobDetails()
         checkApplicationStatus()
         checkIfJobSaved()
+        checkIfJobOwner()
     }
 
     private fun initializeViews() {
@@ -82,10 +86,8 @@ class JobDetailsActivity : AppCompatActivity() {
         rvSimilarJobs = findViewById(R.id.rvSimilarJobs)
         progressBar = findViewById(R.id.progressBar)
         tvSimilarJobsTitle = findViewById(R.id.tvSimilarJobsTitle)
-
-        // Safely initialize optional views
-        tvPostedDate = findViewById(R.id.tvPostedDate) ?: TextView(this)
-        tvExperienceLevel = findViewById(R.id.tvExperienceLevel) ?: TextView(this)
+        tvPostedDate = findViewById(R.id.tvPostedDate)
+        tvExperienceLevel = findViewById(R.id.tvExperienceLevel)
     }
 
     private fun setupRecyclerView() {
@@ -115,9 +117,8 @@ class JobDetailsActivity : AppCompatActivity() {
             toggleSaveJob()
         }
 
-        // Initialize back button safely
-        val btnBack = findViewById<ImageButton>(R.id.btnBack)
-        btnBack?.setOnClickListener {
+        // Initialize back button
+        findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
             onBackPressed()
         }
     }
@@ -183,20 +184,19 @@ class JobDetailsActivity : AppCompatActivity() {
         tvCategory.text = job.category
         tvLocation.text = job.location
         tvDescription.text = job.description
+        tvPostedDate.text = "Posted: ${postedDateFormat.format(job.postedAt)}"
 
-        // Safely handle posted date
-        if (::tvPostedDate.isInitialized && tvPostedDate != null) {
-            tvPostedDate.text = "Posted: ${postedDateFormat.format(job.postedAt)}"
-        }
+        // Display client information from actual job data
+        tvClientCompany.text = job.company ?: "Independent Client"
+        tvClientRating.text = "⭐ ${job.clientRating ?: "4.5"} (${job.totalReviews ?: "10"} reviews)"
+        tvClientBio.text = job.clientBio ?: "Experienced client looking for quality work."
 
-        // Use safe values for client information (since these fields don't exist in your Job model)
-        tvClientCompany.text = "Looking for Talent" // Default since company field doesn't exist
-        tvClientRating.text = "⭐ New Client" // Default since rating fields don't exist
-        tvClientBio.text = "Client looking for quality work to complete their project."
-
-        // Safely handle experience level
-        if (::tvExperienceLevel.isInitialized && tvExperienceLevel != null) {
-            tvExperienceLevel.text = "🚀 ${job.category} Level" // Use category as experience level
+        // Experience level
+        tvExperienceLevel.text = when (job.experienceLevel ?: "Intermediate") {
+            "Beginner" -> "👶 Beginner Level"
+            "Intermediate" -> "🚀 Intermediate Level"
+            "Expert" -> "🏆 Expert Level"
+            else -> "🚀 ${job.experienceLevel}"
         }
 
         // Add skills chips
@@ -272,7 +272,7 @@ class JobDetailsActivity : AppCompatActivity() {
         // If current user is the job owner, hide the apply button
         if (currentUserId == jobClientId) {
             btnApply.visibility = View.GONE
-            findViewById<TextView>(R.id.tvOwnerNotice)?.text = "This is your job posting"
+            Toast.makeText(this, "This is your job posting", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -290,7 +290,6 @@ class JobDetailsActivity : AppCompatActivity() {
                     if (result.isSuccess) {
                         hasApplied = result.getOrNull() ?: false
                         updateUIState()
-                        Log.d("JobDetails", "Application status: $hasApplied")
                     }
                 }
             } catch (e: Exception) {
@@ -331,44 +330,92 @@ class JobDetailsActivity : AppCompatActivity() {
             return
         }
 
+        // Show loading while fetching user data
         progressBar.visibility = View.VISIBLE
         btnApply.isEnabled = false
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Get user's actual name from profile
+                // Get user data for the form
                 val userResult = firebaseService.getUserById(userId)
-                val userName = if (userResult.isSuccess) {
-                    userResult.getOrNull()?.fullName ?: "Freelancer"
-                } else {
-                    "Freelancer"
-                }
-
-                // Get freelancer skills for the cover letter
                 val skillsResult = firebaseService.getFreelancerSkills(userId)
-                val userSkills = skillsResult.getOrNull() ?: emptyList()
 
-                // Create job application with ALL required fields
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    btnApply.isEnabled = true
+
+                    if (userResult.isSuccess && skillsResult.isSuccess) {
+                        val user = userResult.getOrNull()
+                        val userSkills = skillsResult.getOrNull() ?: emptyList()
+                        val userName = user?.fullName ?: "Freelancer"
+
+                        // Show application form dialog
+                        showApplicationForm(job, userSkills, userName, userEmail, userId)
+                    } else {
+                        Toast.makeText(this@JobDetailsActivity, "Failed to load profile data", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    btnApply.isEnabled = true
+                    Toast.makeText(this@JobDetailsActivity, "Error loading profile: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun showApplicationForm(job: Job, userSkills: List<String>, userName: String, userEmail: String, userId: String) {
+        val dialog = ApplicationFormDialog.newInstance(
+            job = job,
+            userSkills = userSkills,
+            userName = userName,
+            onApply = { coverLetter, proposedBudget, estimatedTime ->
+                submitApplicationWithFormData(
+                    job,
+                    userId,
+                    userEmail,
+                    userName,
+                    userSkills,
+                    coverLetter,
+                    proposedBudget,
+                    estimatedTime
+                )
+            }
+        )
+
+        dialog.show(supportFragmentManager, "ApplicationFormDialog")
+    }
+
+    private fun submitApplicationWithFormData(
+        job: Job,
+        userId: String,
+        userEmail: String,
+        userName: String,
+        userSkills: List<String>,
+        coverLetter: String,
+        proposedBudget: Double,
+        estimatedTime: String
+    ) {
+        progressBar.visibility = View.VISIBLE
+        btnApply.isEnabled = false
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
                 val application = JobApplication(
-                    applicationId = "app_${System.currentTimeMillis()}",
                     jobId = job.jobId,
                     freelancerId = userId,
                     freelancerName = userName,
                     freelancerEmail = userEmail,
-                    coverLetter = generateCoverLetter(job, userName, userSkills),
-                    proposedBudget = job.budget,
-                    status = "pending",
-                    appliedAt = Date(),
+                    coverLetter = coverLetter,
+                    proposedBudget = proposedBudget,
                     clientId = job.clientId,
                     jobTitle = job.title,
                     clientName = job.clientName,
-                    estimatedTime = "2-4 weeks",
-                    freelancerSkills = userSkills,
-                    freelancerRating = 0.0,
-                    freelancerCompletedJobs = 0
+                    estimatedTime = estimatedTime,
+                    freelancerSkills = userSkills
                 )
 
-                Log.d("JobDetails", "Submitting application: ${application.applicationId}")
                 val result = firebaseService.submitApplication(application)
 
                 withContext(Dispatchers.Main) {
@@ -378,24 +425,19 @@ class JobDetailsActivity : AppCompatActivity() {
                     if (result.isSuccess) {
                         hasApplied = true
                         updateUIState()
-                        showApplicationSuccessDialog(application)
-                        Log.d("JobDetails", "Application submitted successfully")
+                        showApplicationSuccessDialog(result.getOrNull()!!)
                     } else {
-                        val error = result.exceptionOrNull()
-                        Log.e("JobDetails", "Failed to submit application: ${error?.message}")
                         Toast.makeText(
                             this@JobDetailsActivity,
-                            "Failed to submit application: ${error?.message}",
+                            "Failed to submit application: ${result.exceptionOrNull()?.message}",
                             Toast.LENGTH_LONG
                         ).show()
                     }
                 }
-
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     btnApply.isEnabled = true
-                    Log.e("JobDetails", "Exception submitting application: ${e.message}", e)
                     Toast.makeText(
                         this@JobDetailsActivity,
                         "Error submitting application: ${e.message}",
@@ -406,48 +448,35 @@ class JobDetailsActivity : AppCompatActivity() {
         }
     }
 
-    private fun generateCoverLetter(job: Job, userName: String, skills: List<String>): String {
-        val matchingSkills = skills.intersect(job.skillsRequired.toSet())
-        val dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
-
-        return """
-            Dear ${job.clientName},
-            
-            I am excited to apply for the ${job.title} position. With my experience in ${matchingSkills.joinToString(", ")}, I am confident I can deliver high-quality results for your project.
-            
-            My relevant skills include:
-            ${matchingSkills.joinToString("\n") { "• $it" }}
-            
-            I am available to start immediately and committed to meeting your deadline of ${dateFormat.format(job.deadline)}.
-            
-            Thank you for considering my application.
-            
-            Best regards,
-            $userName
-        """.trimIndent()
-    }
-
     private fun showApplicationSuccessDialog(application: JobApplication) {
         val successMessage = """
-            🎉 Application Submitted!
-            
-            Position: ${application.jobTitle}
-            Client: ${application.clientName}
-            Proposed Budget: R ${application.proposedBudget.toInt()}
-            
-            You will be notified when the client reviews your application.
-        """.trimIndent()
+        🎉 Application Submitted Successfully!
+        
+        Position: ${application.jobTitle}
+        Client: ${application.clientName}
+        Proposed Budget: R ${application.proposedBudget.toInt()}
+        Estimated Time: ${application.estimatedTime}
+        
+        Your application has been sent to the client. 
+        You will be notified when they review your application.
+        
+        You can track your application status in the "My Applications" section.
+    """.trimIndent()
 
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Application Sent!")
             .setMessage(successMessage)
-            .setPositiveButton("Great!") { dialog, which ->
-                // Refresh the dashboard and applications page
-                setResult(RESULT_OK)
+            .setPositiveButton("View My Applications") { dialog, which ->
+                // Navigate to MyApplications activity
+                val intent = Intent(this, student.projects.tholagig.jobs.MyApplicationsActivity::class.java)
+                startActivity(intent)
             }
+            .setNegativeButton("Continue Browsing") { dialog, which ->
+                // Stay on current page
+            }
+            .setCancelable(false)
             .show()
     }
-
     private fun toggleSaveJob() {
         val userId = sessionManager.getUserId() ?: ""
         val jobId = currentJob?.jobId ?: return
@@ -507,13 +536,5 @@ class JobDetailsActivity : AppCompatActivity() {
         btnSave.setColorFilter(
             resources.getColor(if (isSaved) R.color.orange else R.color.gray)
         )
-    }
-
-    override fun onBackPressed() {
-        // Notify that application was submitted
-        if (hasApplied) {
-            setResult(RESULT_OK)
-        }
-        super.onBackPressed()
     }
 }

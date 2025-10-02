@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header: Freelancer Name and Status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvFreelancerName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Freelancer Name"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pending"
+                android:textSize="12sp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:background="@drawable/card_gradient_warning"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+
+        <!-- Job Title -->
+        <TextView
+            android:id="@+id/tvJobTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Job Title"
+            android:textColor="@color/gray"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Applied Date -->
+        <TextView
+            android:id="@+id/tvAppliedDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Applied: Oct 02, 2023 at 14:30"
+            android:textColor="@color/gray"
+            android:textSize="12sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Budget and Skills Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvProposedBudget"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="R 5,000"
+                android:textColor="@color/orange"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSkills"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="Kotlin, Android, Firebase, UI/UX"
+                android:textColor="@color/gray"
+                android:textSize="12sp"
+                android:ellipsize="end"
+                android:maxLines="1" />
+
+        </LinearLayout>
+
+        <!-- Primary Action Buttons: Accept/Reject -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <Button
+                android:id="@+id/btnAccept"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:text="Accept"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/green"
+                android:textSize="12sp"
+                style="@style/Widget.Material3.Button" />
+
+            <Button
+                android:id="@+id/btnReject"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:text="Reject"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/red"
+                android:textSize="12sp"
+                style="@style/Widget.Material3.Button" />
+
+        </LinearLayout>
+
+        <!-- Secondary Action Buttons: View Profile & Contact -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnViewProfile"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:text="View Profile"
+                android:textColor="@color/orange"
+                android:background="@drawable/button_outline_orange"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btnContact"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:text="Contact"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/orange"
+                android:textSize="12sp"
+                style="@style/Widget.Material3.Button" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
