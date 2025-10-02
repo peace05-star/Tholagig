@@ -10,7 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.*
+import kotlinx.coroutines.tasks.await
 import student.projects.tholagig.R
 import student.projects.tholagig.Adapters.JobsAdapter
 import student.projects.tholagig.dialogs.ApplicationFormDialog
@@ -56,8 +58,6 @@ class JobDetailsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_job_details)
 
         sessionManager = SessionManager(this)
-
-
         firebaseService = FirebaseService()
 
         initializeViews()
@@ -350,7 +350,7 @@ class JobDetailsActivity : AppCompatActivity() {
                         val userName = user?.fullName ?: "Freelancer"
 
                         // Show application form dialog
-                        showApplicationForm(job, userSkills, userName, userEmail, userId)
+                        showApplicationDialog(job, userSkills, userName, userEmail, userId)
                     } else {
                         Toast.makeText(this@JobDetailsActivity, "Failed to load profile data", Toast.LENGTH_SHORT).show()
                     }
@@ -365,83 +365,74 @@ class JobDetailsActivity : AppCompatActivity() {
         }
     }
 
-    private fun showApplicationForm(job: Job, userSkills: List<String>, userName: String, userEmail: String, userId: String) {
+    private fun showApplicationDialog(
+        job: Job,
+        userSkills: List<String>,
+        userName: String,
+        userEmail: String,
+        userId: String
+    ) {
         val dialog = ApplicationFormDialog.newInstance(
             job = job,
-            userSkills = userSkills,
-            userName = userName,
+            freelancerId = userId,
+            freelancerName = userName,
+            freelancerSkills = userSkills,
             onApply = { coverLetter, proposedBudget, estimatedTime ->
-                submitApplicationWithFormData(
-                    job,
-                    userId,
-                    userEmail,
-                    userName,
-                    userSkills,
-                    coverLetter,
-                    proposedBudget,
-                    estimatedTime
+                // Create and save application directly
+                val application = JobApplication(
+                    applicationId = "app_${System.currentTimeMillis()}_${(1000..9999).random()}",
+                    jobId = job.jobId ?: "",
+                    freelancerId = userId,
+                    freelancerName = userName,
+                    freelancerEmail = userEmail,
+                    coverLetter = coverLetter,
+                    proposedBudget = proposedBudget,
+                    status = "pending",
+                    appliedAt = Date(),
+                    clientId = job.clientId ?: "",
+                    jobTitle = job.title,
+                    clientName = job.clientName ?: "",
+                    estimatedTime = estimatedTime,
+                    freelancerRating = 0.0,
+                    freelancerCompletedJobs = 0,
+                    freelancerSkills = userSkills
                 )
+
+                // Save to Firebase directly
+                saveApplicationDirectly(application)
             }
         )
 
         dialog.show(supportFragmentManager, "ApplicationFormDialog")
     }
 
-    private fun submitApplicationWithFormData(
-        job: Job,
-        userId: String,
-        userEmail: String,
-        userName: String,
-        userSkills: List<String>,
-        coverLetter: String,
-        proposedBudget: Double,
-        estimatedTime: String
-    ) {
-        progressBar.visibility = View.VISIBLE
-        btnApply.isEnabled = false
-
+    private fun saveApplicationDirectly(application: JobApplication) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val application = JobApplication(
-                    jobId = job.jobId,
-                    freelancerId = userId,
-                    freelancerName = userName,
-                    freelancerEmail = userEmail,
-                    coverLetter = coverLetter,
-                    proposedBudget = proposedBudget,
-                    clientId = job.clientId,
-                    jobTitle = job.title,
-                    clientName = job.clientName,
-                    estimatedTime = estimatedTime,
-                    freelancerSkills = userSkills
-                )
-
-                val result = firebaseService.submitApplication(application)
+                FirebaseFirestore.getInstance()
+                    .collection("jobApplications")
+                    .document(application.applicationId)
+                    .set(application)
+                    .await()
 
                 withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    btnApply.isEnabled = true
+                    Toast.makeText(
+                        this@JobDetailsActivity,
+                        "✅ Application submitted successfully!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    hasApplied = true
+                    updateUIState()
 
-                    if (result.isSuccess) {
-                        hasApplied = true
-                        updateUIState()
-                        showApplicationSuccessDialog(result.getOrNull()!!)
-                    } else {
-                        Toast.makeText(
-                            this@JobDetailsActivity,
-                            "Failed to submit application: ${result.exceptionOrNull()?.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
+                    // Show success dialog
+                    showApplicationSuccessDialog(application)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    btnApply.isEnabled = true
                     Toast.makeText(
                         this@JobDetailsActivity,
-                        "Error submitting application: ${e.message}",
-                        Toast.LENGTH_LONG
+                        "❌ Failed to submit: ${e.message}",
+                        Toast.LENGTH_SHORT
                     ).show()
                 }
             }
@@ -477,6 +468,7 @@ class JobDetailsActivity : AppCompatActivity() {
             .setCancelable(false)
             .show()
     }
+
     private fun toggleSaveJob() {
         val userId = sessionManager.getUserId() ?: ""
         val jobId = currentJob?.jobId ?: return

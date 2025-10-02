@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import student.projects.tholagig.R
 import student.projects.tholagig.models.JobApplication
@@ -93,7 +94,7 @@ class ApplicationsManagementAdapter(
 
         // Set click listeners
         holder.btnViewProfile.setOnClickListener {
-            onViewProfile(application)
+            showFreelancerProfileDialog(application, holder.itemView.context)
         }
 
         holder.btnAccept.setOnClickListener {
@@ -119,22 +120,27 @@ class ApplicationsManagementAdapter(
             "pending" -> {
                 statusView.text = "⏳ Pending Review"
                 statusView.setBackgroundResource(R.drawable.status_pending_bg)
-                statusView.setTextColor(statusView.context.getColor(R.color.white))
+                statusView.setTextColor(ContextCompat.getColor(statusView.context, R.color.white))
             }
-            "accepted" -> {
+            "accepted", "hired" -> {
                 statusView.text = "✅ Hired"
                 statusView.setBackgroundResource(R.drawable.status_accepted_bg)
-                statusView.setTextColor(statusView.context.getColor(R.color.white))
+                statusView.setTextColor(ContextCompat.getColor(statusView.context, R.color.white))
             }
             "rejected" -> {
                 statusView.text = "❌ Rejected"
                 statusView.setBackgroundResource(R.drawable.status_rejected_bg)
-                statusView.setTextColor(statusView.context.getColor(R.color.white))
+                statusView.setTextColor(ContextCompat.getColor(statusView.context, R.color.white))
+            }
+            "withdrawn" -> {
+                statusView.text = "📤 Withdrawn"
+                statusView.setBackgroundResource(R.drawable.status_withdrawn_bg)
+                statusView.setTextColor(ContextCompat.getColor(statusView.context, R.color.white))
             }
             else -> {
                 statusView.text = status
                 statusView.setBackgroundResource(R.drawable.status_pending_bg)
-                statusView.setTextColor(statusView.context.getColor(R.color.white))
+                statusView.setTextColor(ContextCompat.getColor(statusView.context, R.color.white))
             }
         }
     }
@@ -145,9 +151,45 @@ class ApplicationsManagementAdapter(
         AlertDialog.Builder(context)
             .setTitle("📝 Cover Letter from ${application.freelancerName}")
             .setMessage(coverLetter)
-            .setPositiveButton("Close", null)
-            .setNeutralButton("View Profile") { dialog, which ->
-                onViewProfile(application)
+            .setPositiveButton("Close") { dialog, which ->
+                // Close dialog
+            }
+            .setNeutralButton("View Full Profile") { dialog, which ->
+                showFreelancerProfileDialog(application, context)
+            }
+            .show()
+    }
+
+    private fun showFreelancerProfileDialog(application: JobApplication, context: android.content.Context) {
+        val profileInfo = """
+            👤 ${application.freelancerName}
+            
+            📧 ${application.freelancerEmail ?: "No email provided"}
+            
+            ⭐ Rating: ${application.freelancerRating ?: "No rating yet"}
+            
+            💼 Completed Jobs: ${application.freelancerCompletedJobs ?: 0}
+            
+            🔧 Skills: ${application.freelancerSkills?.joinToString(", ") ?: "No skills listed"}
+            
+            💰 Proposed Budget: R ${application.proposedBudget.toInt()}
+            
+            ⏱️ Estimated Time: ${application.estimatedTime ?: "Not specified"}
+            
+            📅 Applied: ${dateFormat.format(application.appliedAt)}
+            
+            📝 Cover Letter:
+            ${application.coverLetter ?: "No cover letter provided"}
+        """.trimIndent()
+
+        AlertDialog.Builder(context)
+            .setTitle("👤 ${application.freelancerName}'s Profile")
+            .setMessage(profileInfo)
+            .setPositiveButton("Close") { dialog, which ->
+                // Close dialog
+            }
+            .setNeutralButton("Contact") { dialog, which ->
+                onMessage(application)
             }
             .show()
     }

@@ -28,22 +28,37 @@ class ApplicationFormDialog : DialogFragment() {
         private const val ARG_JOB_DEADLINE = "jobDeadline"
         private const val ARG_USER_SKILLS = "userSkills"
         private const val ARG_USER_NAME = "userName"
+        private const val ARG_FREELANCER_ID = "freelancerId"
+        private const val ARG_FREELANCER_EMAIL = "freelancerEmail"
+        private const val ARG_FREELANCER_RATING = "freelancerRating"
+        private const val ARG_FREELANCER_COMPLETED_JOBS = "freelancerCompletedJobs"
+        private const val ARG_CLIENT_ID = "clientId"
+        private const val ARG_JOB_ID = "jobId"
 
+        // SIMPLIFIED version - start with basic parameters
         fun newInstance(
             job: Job,
-            userSkills: List<String>,
-            userName: String,
+            freelancerId: String,
+            freelancerName: String,
+            freelancerSkills: List<String>,
             onApply: (String, Double, String) -> Unit
         ): ApplicationFormDialog {
             val dialog = ApplicationFormDialog()
             val args = Bundle().apply {
+                putString(ARG_JOB_ID, job.jobId)
                 putString(ARG_JOB_TITLE, job.title)
                 putDouble(ARG_JOB_BUDGET, job.budget)
                 putStringArrayList(ARG_JOB_SKILLS, ArrayList(job.skillsRequired))
-                putString(ARG_JOB_CLIENT_NAME, job.clientName)
+                putString(ARG_JOB_CLIENT_NAME, job.clientName ?: "")
                 putLong(ARG_JOB_DEADLINE, job.deadline.time)
-                putStringArrayList(ARG_USER_SKILLS, ArrayList(userSkills))
-                putString(ARG_USER_NAME, userName)
+                putString(ARG_FREELANCER_ID, freelancerId)
+                putString(ARG_USER_NAME, freelancerName)
+                putStringArrayList(ARG_USER_SKILLS, ArrayList(freelancerSkills))
+                // Set default values for now
+                putString(ARG_FREELANCER_EMAIL, "")
+                putDouble(ARG_FREELANCER_RATING, 0.0)
+                putInt(ARG_FREELANCER_COMPLETED_JOBS, 0)
+                putString(ARG_CLIENT_ID, job.clientId ?: "")
             }
             dialog.arguments = args
             dialog.onApply = onApply

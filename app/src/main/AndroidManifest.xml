@@ -14,12 +14,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Tholagig">
-        <activity
-            android:name=".ApplicationFormDialog"
-            android:exported="false" />
-        <activity
-            android:name=".Adapters.ClientApplicationsActivity"
-            android:exported="false" />
+
+        <!-- Remove these lines - they are not activities -->
+        <!-- <activity android:name=".ApplicationFormDialog" android:exported="false" /> -->
+        <!-- <activity android:name=".Adapters.ClientApplicationsActivity" android:exported="false" /> -->
+
         <activity
             android:name=".jobs.ApplicationDetailsActivity"
             android:exported="false" />
@@ -34,21 +33,28 @@
             android:exported="false" />
         <activity
             android:name=".auth.UserTypeSelectionActivity"
-            android:exported="false" /> <!-- Dashboard Activities -->
+            android:exported="false" />
+
+        <!-- Dashboard Activities -->
         <activity android:name=".dashboards.FreelancerDashboardActivity" />
-        <activity android:name=".dashboards.ClientDashboardActivity" /> <!-- Job Activities -->
+        <activity android:name=".dashboards.ClientDashboardActivity" />
+
+        <!-- Job Activities -->
         <activity android:name=".jobs.JobBrowseActivity" />
-        <activity android:name=".jobs.JobDetailsActivity" /> <!-- Profile Activity -->
+        <activity android:name=".jobs.JobDetailsActivity" />
+
+        <!-- Profile Activity -->
         <activity android:name=".profile.ProfileActivity" />
+
         <activity android:name=".jobs.MyJobsActivity" />
         <activity android:name=".jobs.CreateJobActivity" />
         <activity android:name=".jobs.ApplicationsManagementActivity" />
+
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

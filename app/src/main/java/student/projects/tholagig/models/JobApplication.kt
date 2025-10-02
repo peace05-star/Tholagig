@@ -1,8 +1,10 @@
 package student.projects.tholagig.models
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
 import java.util.Date
-
+@Parcelize
 data class JobApplication(
     val applicationId: String = "",
     val jobId: String = "",
@@ -21,4 +23,4 @@ data class JobApplication(
     val freelancerCompletedJobs: Int = 0,
     val freelancerSkills: List<String> = emptyList(),
 
-)
+) : Parcelable

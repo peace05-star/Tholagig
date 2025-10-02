@@ -4,6 +4,9 @@ import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 import student.projects.tholagig.models.User
 import student.projects.tholagig.models.Job
@@ -15,6 +18,7 @@ class FirebaseService {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val TAG = "FirebaseService"
+    private val firestore: FirebaseFirestore = Firebase.firestore
 
     // === ENHANCED USER OPERATIONS ===
 
@@ -670,5 +674,15 @@ class FirebaseService {
         }
     }
 
-
+    suspend fun saveJobApplication(application: JobApplication): Result<Boolean> {
+        return try {
+            firestore.collection("jobApplications")
+                .document(application.applicationId)
+                .set(application)
+                .await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

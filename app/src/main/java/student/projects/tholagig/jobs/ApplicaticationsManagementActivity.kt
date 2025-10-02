@@ -70,7 +70,6 @@ class ApplicationsManagementActivity : AppCompatActivity() {
         applicationsAdapter = ApplicationsManagementAdapter(
             applications = filteredApplications,
             onViewProfile = { application ->
-                viewFreelancerProfile(application)
             },
             onAccept = { application ->
                 acceptApplication(application)
