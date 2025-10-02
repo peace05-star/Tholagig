@@ -14,39 +14,43 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Tholagig">
-
+        <activity
+            android:name=".profile.ClientProfileActivity"
+            android:exported="false" />
         <!-- Auth Activities -->
-        <activity android:name=".auth.RegisterActivity" android:exported="false" />
-        <activity android:name=".auth.LoginActivity" android:exported="false" />
-        <activity android:name=".auth.UserTypeSelectionActivity" android:exported="false" />
-
-        <!-- Dashboard Activities -->
+        <activity
+            android:name=".auth.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".auth.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".auth.UserTypeSelectionActivity"
+            android:exported="false" /> <!-- Dashboard Activities -->
         <activity android:name=".dashboards.FreelancerDashboardActivity" />
-        <activity android:name=".dashboards.ClientDashboardActivity" />
-
-        <!-- Job Activities -->
+        <activity android:name=".dashboards.ClientDashboardActivity" /> <!-- Job Activities -->
         <activity android:name=".jobs.JobBrowseActivity" />
         <activity android:name=".jobs.JobDetailsActivity" />
         <activity android:name=".jobs.MyJobsActivity" />
         <activity android:name=".jobs.CreateJobActivity" />
-        <activity android:name=".jobs.MyApplicationsActivity" android:exported="false" />
-        <activity android:name=".jobs.ApplicationDetailsActivity" android:exported="false" />
-        <activity android:name=".jobs.ApplicationsManagementActivity" />
-
-        <!-- Profile -->
-        <activity android:name=".profile.ProfileActivity" />
-
-        <!-- MESSAGES ACTIVITY - 🔥 YOU MUST ADD THIS -->
-        <activity android:name=".messaging.MessagesActivity" />
-
-        <!-- Welcome/Launcher -->
-        <activity android:name=".WelcomeActivity" android:exported="true">
+        <activity
+            android:name=".jobs.MyApplicationsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".jobs.ApplicationDetailsActivity"
+            android:exported="false" />
+        <activity android:name=".jobs.ApplicationsManagementActivity" /> <!-- Profile -->
+        <activity android:name=".profile.ProfileActivity" /> <!-- MESSAGES ACTIVITY - 🔥 YOU MUST ADD THIS -->
+        <activity android:name=".messaging.MessagesActivity" /> <!-- Welcome/Launcher -->
+        <activity
+            android:name=".WelcomeActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
-
 
 </manifest>

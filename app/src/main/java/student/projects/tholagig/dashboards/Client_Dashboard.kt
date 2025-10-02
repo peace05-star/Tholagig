@@ -24,6 +24,7 @@ import student.projects.tholagig.models.Job
 import student.projects.tholagig.models.JobApplication
 import student.projects.tholagig.network.FirebaseService
 import student.projects.tholagig.network.SessionManager
+import student.projects.tholagig.profile.ClientProfileActivity
 import student.projects.tholagig.profile.ProfileActivity
 import java.text.NumberFormat
 import java.util.*
@@ -42,6 +43,8 @@ class ClientDashboardActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
 
     private lateinit var recentJobsAdapter: RecentJobsAdapter
+
+    private lateinit var btnProfile: ImageButton
     private val recentJobs = mutableListOf<Job>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +69,7 @@ class ClientDashboardActivity : AppCompatActivity() {
         rvRecentJobs = findViewById(R.id.rvRecentJobs)
         fabCreateJob = findViewById(R.id.fabCreateJob)
         progressBar = findViewById(R.id.progressBar)
+        btnProfile = findViewById(R.id.btnProfile)
     }
 
     private fun setupRecyclerView() {
@@ -77,6 +81,12 @@ class ClientDashboardActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
+
+            btnProfile.setOnClickListener {
+                val intent = Intent(this, ClientProfileActivity::class.java)
+                startActivity(intent)
+            }
+
         findViewById<CardView>(R.id.cardActiveJobs).setOnClickListener {
             startActivity(Intent(this, MyJobsActivity::class.java))
         }

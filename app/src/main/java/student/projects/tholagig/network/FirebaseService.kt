@@ -99,6 +99,26 @@ class FirebaseService {
         }
     }
 
+    // === USER PROFILE UPDATE OPERATIONS ===
+
+    suspend fun updateUser(userId: String, updateData: Map<String, Any>): Result<Boolean> {
+        return try {
+            Log.d(TAG, "🟡 Updating user profile for: $userId")
+            Log.d(TAG, "🟡 Update data: $updateData")
+
+            db.collection("users")
+                .document(userId)
+                .update(updateData)
+                .await()
+
+            Log.d(TAG, "🟢 User profile updated successfully")
+            Result.success(true)
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 Error updating user profile: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
     // === ENHANCED JOB OPERATIONS ===
 
     // In FirebaseService.kt - Update getJobs() function

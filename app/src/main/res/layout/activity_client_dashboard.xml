@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/light_gray_background"
-    android:paddingTop="?attr/actionBarSize">
+    android:background="@color/light_gray_background">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -16,16 +15,34 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Welcome Section -->
-            <TextView
-                android:id="@+id/tvWelcome"
+            <!-- Welcome Section - Now in horizontal layout -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Welcome, Client!"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@color/primary_color"
-                android:layout_marginBottom="24dp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="24dp">
+
+                <!-- Welcome Text -->
+                <TextView
+                    android:id="@+id/tvWelcome"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Welcome, Client!"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary_color" />
+
+                <!-- Profile Button -->
+                <ImageButton
+                    android:id="@+id/btnProfile"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_profile" />
+
+            </LinearLayout>
 
             <!-- Stats Cards Row 1 -->
             <LinearLayout
@@ -230,7 +247,7 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- Add this to your layout -->
+            <!-- Progress Bar -->
             <ProgressBar
                 android:id="@+id/progressBar"
                 android:layout_width="wrap_content"
@@ -253,7 +270,5 @@
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/primary_color"
         app:tint="@color/white" />
-
-
 
 </RelativeLayout>
