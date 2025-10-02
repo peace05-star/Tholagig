@@ -159,22 +159,6 @@ class FirebaseService {
         }
     }
 
-    suspend fun getSimilarJobs(jobId: String, category: String): Result<List<Job>> {
-        return try {
-            val snapshot = db.collection("jobs")
-                .whereEqualTo("category", category)
-                .whereEqualTo("status", "open")
-                .whereNotEqualTo("jobId", jobId)
-                .limit(5)
-                .get()
-                .await()
-
-            val jobs = snapshot.toObjects(Job::class.java)
-            Result.success(jobs)
-        } catch (e: Exception) {
-            Result.success(emptyList())
-        }
-    }
 
     // Add this function to your FirebaseService class
     suspend fun getSimilarJobsAdvanced(currentJob: Job): Result<List<Job>> {
@@ -186,11 +170,50 @@ class FirebaseService {
             val similarJobs = findSimilarJobsWithMultipleStrategies(currentJob)
 
             Log.d("FirebaseService", "✅ Total similar jobs found: ${similarJobs.size}")
-            Result.success(similarJobs)
+
+            // ✅ ADD THIS: Final filtering - remove jobs that are too different
+            val filteredJobs = similarJobs.filter { job ->
+                isJobTrulySimilar(currentJob, job)
+            }
+
+            Log.d("FirebaseService", "✅ After final filtering: ${filteredJobs.size} truly similar jobs")
+            Result.success(filteredJobs.take(6))
         } catch (e: Exception) {
             Log.e("FirebaseService", "❌ Error in getSimilarJobsAdvanced: ${e.message}")
-            Result.success(emptyList()) // Return empty instead of failure for graceful handling
+            Result.success(emptyList())
         }
+    }
+
+    // ✅ ADD THIS FUNCTION: Strict similarity checking
+    private fun isJobTrulySimilar(currentJob: Job, otherJob: Job): Boolean {
+        // Must have at least ONE of these similarity criteria:
+
+        // 1. Same category AND at least 1 common skill
+        val sameCategoryAndSkills = currentJob.category.equals(otherJob.category, ignoreCase = true) &&
+                currentJob.skillsRequired.intersect(otherJob.skillsRequired.toSet()).isNotEmpty()
+
+        // 2. Different category but STRONG skills overlap (at least 2 common skills)
+        val strongSkillsOverlap = !currentJob.category.equals(otherJob.category, ignoreCase = true) &&
+                currentJob.skillsRequired.intersect(otherJob.skillsRequired.toSet()).size >= 2
+
+        // 3. Same experience level AND budget within 50% range
+        val similarLevelAndBudget = currentJob.experienceLevel.equals(otherJob.experienceLevel, ignoreCase = true) &&
+                abs(currentJob.budget - otherJob.budget) / maxOf(currentJob.budget, otherJob.budget) < 0.5
+
+        val isSimilar = sameCategoryAndSkills || strongSkillsOverlap || similarLevelAndBudget
+
+        Log.d("SimilarityCheck",
+            "Comparing: '${currentJob.title}' (${currentJob.category}) vs '${otherJob.title}' (${otherJob.category})\n" +
+                    "Same Category: ${currentJob.category.equals(otherJob.category, ignoreCase = true)}\n" +
+                    "Common Skills: ${currentJob.skillsRequired.intersect(otherJob.skillsRequired.toSet())}\n" +
+                    "Common Skills Count: ${currentJob.skillsRequired.intersect(otherJob.skillsRequired.toSet()).size}\n" +
+                    "Same Experience Level: ${currentJob.experienceLevel.equals(otherJob.experienceLevel, ignoreCase = true)}\n" +
+                    "Budget Similar: ${abs(currentJob.budget - otherJob.budget) / maxOf(currentJob.budget, otherJob.budget) < 0.5}\n" +
+                    "FINAL DECISION: $isSimilar\n" +
+                    "---"
+        )
+
+        return isSimilar
     }
 
     private suspend fun findSimilarJobsWithMultipleStrategies(currentJob: Job): List<Job> {
@@ -201,24 +224,33 @@ class FirebaseService {
         allPossibleJobs.addAll(categorySkillsJobs)
         Log.d("FirebaseService", "Strategy 1 - Category+Skills: ${categorySkillsJobs.size} jobs")
 
-        // Strategy 2: Same category only
+        // Strategy 2: Same category only (but filter out completely unrelated ones)
         if (allPossibleJobs.size < 4) {
             val categoryOnlyJobs = getJobsByCategoryOnly(currentJob)
                 .filterNot { job -> allPossibleJobs.any { it.jobId == job.jobId } }
+                .filter { job ->
+                    // Only include if they share at least some relevance
+                    job.experienceLevel.equals(currentJob.experienceLevel, ignoreCase = true) ||
+                            abs(job.budget - currentJob.budget) / maxOf(job.budget, currentJob.budget) < 0.7
+                }
             allPossibleJobs.addAll(categoryOnlyJobs)
-            Log.d("FirebaseService", "Strategy 2 - Category only: ${categoryOnlyJobs.size} jobs")
+            Log.d("FirebaseService", "Strategy 2 - Category only (filtered): ${categoryOnlyJobs.size} jobs")
         }
 
-        // Strategy 3: Skills overlap only (different category)
+        // Strategy 3: Skills overlap only (different category) - be more strict
         if (allPossibleJobs.size < 4) {
             val skillsOnlyJobs = getJobsBySkillsOnly(currentJob)
                 .filterNot { job -> allPossibleJobs.any { it.jobId == job.jobId } }
+                .filter { job ->
+                    // Require at least 2 common skills for different categories
+                    currentJob.skillsRequired.intersect(job.skillsRequired.toSet()).size >= 2
+                }
             allPossibleJobs.addAll(skillsOnlyJobs)
-            Log.d("FirebaseService", "Strategy 3 - Skills only: ${skillsOnlyJobs.size} jobs")
+            Log.d("FirebaseService", "Strategy 3 - Skills only (strict): ${skillsOnlyJobs.size} jobs")
         }
 
-        // Strategy 4: Any recent jobs as fallback
-        if (allPossibleJobs.size < 3) {
+        // Strategy 4: Any recent jobs as fallback (only if we have very few results)
+        if (allPossibleJobs.size < 2) {
             val recentJobs = getRecentJobs(6)
                 .filterNot { job -> allPossibleJobs.any { it.jobId == job.jobId } || job.jobId == currentJob.jobId }
             allPossibleJobs.addAll(recentJobs)
@@ -231,7 +263,7 @@ class FirebaseService {
             .filter { it.jobId != currentJob.jobId }
             .map { job -> Pair(job, calculateRelevanceScore(currentJob, job)) }
             .sortedByDescending { it.second }
-            .take(6) // Return top 6 most relevant
+            .take(8) // Take a few more for final filtering
             .map { it.first }
     }
 
@@ -241,7 +273,7 @@ class FirebaseService {
             val categoryQuery = db.collection("jobs")
                 .whereEqualTo("category", currentJob.category)
                 .whereNotEqualTo("jobId", currentJob.jobId)
-                .limit(10)
+                .limit(10L) // Change to Long
 
             val snapshot = categoryQuery.get().await()
             val jobsInCategory = snapshot.toObjects(Job::class.java)
@@ -262,7 +294,7 @@ class FirebaseService {
             val query = db.collection("jobs")
                 .whereEqualTo("category", currentJob.category)
                 .whereNotEqualTo("jobId", currentJob.jobId)
-                .limit(8)
+                .limit(8L) // Change to Long
 
             val snapshot = query.get().await()
             snapshot.toObjects(Job::class.java)
@@ -271,6 +303,24 @@ class FirebaseService {
             emptyList()
         }
     }
+
+    suspend fun getSimilarJobs(jobId: String, category: String): Result<List<Job>> {
+        return try {
+            val snapshot = db.collection("jobs")
+                .whereEqualTo("category", category)
+                .whereEqualTo("status", "open")
+                .whereNotEqualTo("jobId", jobId)
+                .limit(5L) // Change to Long
+                .get()
+                .await()
+
+            val jobs = snapshot.toObjects(Job::class.java)
+            Result.success(jobs)
+        } catch (e: Exception) {
+            Result.success(emptyList())
+        }
+    }
+
 
     private suspend fun getJobsBySkillsOnly(currentJob: Job): List<Job> {
         return try {
