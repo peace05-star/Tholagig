@@ -216,9 +216,17 @@ class JobDetailsActivity : AppCompatActivity() {
     }
 
     private fun loadSimilarJobs(category: String) {
+        val currentJob = currentJob ?: return
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val result = firebaseService.getSimilarJobs(currentJob?.jobId ?: "", category)
+                Log.d("JobDetails", "=== STARTING ENHANCED SIMILAR JOBS SEARCH ===")
+                Log.d("JobDetails", "Current Job: ${currentJob.title}")
+                Log.d("JobDetails", "Category: $category")
+                Log.d("JobDetails", "Skills: ${currentJob.skillsRequired}")
+
+                // Use the advanced similar jobs function instead of the basic one
+                val result = firebaseService.getSimilarJobsAdvanced(currentJob)
 
                 withContext(Dispatchers.Main) {
                     if (result.isSuccess) {
@@ -227,18 +235,28 @@ class JobDetailsActivity : AppCompatActivity() {
                         similarJobs.addAll(similarJobsList)
                         similarJobsAdapter.notifyDataSetChanged()
 
-                        // Update similar jobs title
-                        tvSimilarJobsTitle.text = if (similarJobs.isEmpty()) {
-                            "No similar jobs found"
-                        } else {
-                            "Similar Jobs (${similarJobs.size})"
+                        Log.d("JobDetails", "=== ENHANCED SEARCH COMPLETE ===")
+                        Log.d("JobDetails", "Final similar jobs count: ${similarJobs.size}")
+
+                        // Log each similar job found
+                        similarJobs.forEachIndexed { index, job ->
+                            Log.d("JobDetails", "Similar job ${index + 1}: ${job.title} (${job.category}) - Skills: ${job.skillsRequired}")
                         }
+
+                        // Update UI
+                        tvSimilarJobsTitle.text = when {
+                            similarJobs.isEmpty() -> "No similar jobs found"
+                            similarJobs.size == 1 -> "Similar Job (1)"
+                            else -> "Similar Jobs (${similarJobs.size})"
+                        }
+
                     } else {
-                        tvSimilarJobsTitle.text = "Failed to load similar jobs"
+                        Log.e("JobDetails", "Failed to load similar jobs")
+                        tvSimilarJobsTitle.text = "Error loading similar jobs"
                     }
                 }
             } catch (e: Exception) {
-                Log.e("JobDetails", "Error loading similar jobs: ${e.message}")
+                Log.e("JobDetails", "Error in loadSimilarJobs: ${e.message}")
                 withContext(Dispatchers.Main) {
                     tvSimilarJobsTitle.text = "Error loading similar jobs"
                 }

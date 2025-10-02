@@ -2,6 +2,7 @@ package student.projects.tholagig.jobs
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -9,6 +10,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
 import student.projects.tholagig.R
 import student.projects.tholagig.jobs.JobDetailsActivity
@@ -92,112 +94,107 @@ class ApplicationDetailsActivity : AppCompatActivity() {
         val applicationId = intent.getStringExtra("APPLICATION_ID") ?: ""
         val jobId = intent.getStringExtra("JOB_ID") ?: ""
 
+        if (applicationId.isEmpty() || jobId.isEmpty()) {
+            Toast.makeText(this, "Invalid application data", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // In a real app, fetch application and job details from Firebase
-                // For now, we'll use mock data
-                val mockApplication = createMockApplication(applicationId, jobId)
-                currentApplication = mockApplication
+                Log.d("ApplicationDetails", "🟡 Loading application: $applicationId and job: $jobId")
 
-                val mockJob = createMockJob(jobId)
-                jobDetails = mockJob
+                val userId = sessionManager.getUserId() ?: ""
+
+                // Load all user applications and find the specific one
+                val applicationsResult = firebaseService.getApplicationsByFreelancer(userId)
+                val jobResult = firebaseService.getJobById(jobId)
 
                 withContext(Dispatchers.Main) {
-                    displayApplicationDetails(mockApplication, mockJob)
                     progressBar.visibility = View.GONE
+
+                    if (applicationsResult.isSuccess && jobResult.isSuccess) {
+                        val applications = applicationsResult.getOrNull() ?: emptyList()
+                        val application = applications.find { it.applicationId == applicationId }
+
+                        jobDetails = jobResult.getOrNull()
+
+                        if (application != null && jobDetails != null) {
+                            currentApplication = application
+                            displayApplicationDetails(application, jobDetails!!)
+                            Log.d("ApplicationDetails", "🟢 Successfully loaded application and job details")
+                        } else {
+                            showErrorState("Application or job not found")
+                        }
+                    } else {
+                        val appError = applicationsResult.exceptionOrNull()?.message ?: "Unknown error"
+                        val jobError = jobResult.exceptionOrNull()?.message ?: "Unknown error"
+                        Log.e("ApplicationDetails", "🔴 Failed to load data - App: $appError, Job: $jobError")
+                        showErrorState("Failed to load application details")
+                    }
                 }
             } catch (e: Exception) {
+                Log.e("ApplicationDetails", "💥 Error loading details: ${e.message}", e)
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
-                    Toast.makeText(
-                        this@ApplicationDetailsActivity,
-                        "Error loading application details: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    showErrorState("Network error: ${e.message}")
                 }
             }
         }
-    }
-
-    private fun createMockApplication(applicationId: String, jobId: String): JobApplication {
-        return JobApplication(
-            applicationId = applicationId,
-            jobId = jobId,
-            freelancerId = "user_123",
-            freelancerName = "You",
-            freelancerEmail = "user@example.com",
-            coverLetter = "Dear Hiring Manager,\n\nI am writing to express my strong interest in the Mobile App Developer position. With over 3 years of experience in Android development using Kotlin and Java, I am confident in my ability to contribute to your team's success.\n\nMy technical skills include:\n• Kotlin and Java programming\n• Android SDK and Material Design\n• Firebase integration\n• REST API development\n• Git version control\n\nI have successfully delivered multiple mobile applications for clients in various industries, and I'm particularly excited about the e-commerce focus of this project. I believe my experience aligns perfectly with your requirements.\n\nThank you for considering my application. I look forward to the opportunity to discuss how I can contribute to your team.\n\nBest regards,\n[Your Name]",
-            proposedBudget = 15000.0,
-            status = "pending",
-            appliedAt = Date(System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000),
-            clientId = "client_1",
-            jobTitle = "Mobile App Developer",
-            clientName = "Tech Solutions SA"
-        )
-    }
-
-    private fun createMockJob(jobId: String): Job {
-        return Job(
-            jobId = jobId,
-            title = "Mobile App Developer",
-            clientId = "client_1",
-            clientName = "Tech Solutions SA",
-            description = "We need an experienced mobile app developer...",
-            budget = 15000.0,
-            category = "Mobile Development",
-            skillsRequired = listOf("Kotlin", "Android SDK", "Firebase"),
-            location = "Remote",
-            deadline = Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000),
-            postedAt = Date(System.currentTimeMillis() - 5 * 24 * 60 * 60 * 1000)
-        )
     }
 
     private fun displayApplicationDetails(application: JobApplication, job: Job) {
         val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
         val timeFormat = SimpleDateFormat("dd MMM yyyy 'at' HH:mm", Locale.getDefault())
 
-        tvJobTitle.text = application.jobTitle
-        tvClientName.text = application.clientName
+        tvJobTitle.text = application.jobTitle ?: job.title
+        tvClientName.text = application.clientName ?: job.clientName
         tvProposedBudget.text = "R ${application.proposedBudget.toInt()}"
         tvAppliedDate.text = "Applied ${dateFormat.format(application.appliedAt)}"
         tvAppliedTime.text = timeFormat.format(application.appliedAt)
-        tvCoverLetter.text = application.coverLetter
+        tvCoverLetter.text = application.coverLetter ?: "No cover letter provided"
 
         // Job details
-        tvJobCategory.text = job.category
-        tvJobLocation.text = job.location
+        tvJobCategory.text = job.category ?: "Not specified"
+        tvJobLocation.text = job.location ?: "Not specified"
         tvJobDeadline.text = dateFormat.format(job.deadline)
 
         // Set status and update timeline
-        setApplicationStatus(application.status)
+        setApplicationStatus(application.status ?: "pending")
     }
 
     private fun setApplicationStatus(status: String) {
         // Update status badge
         when (status.lowercase()) {
             "pending" -> {
-                tvStatus.text = "Pending Review"
+                tvStatus.text = "⏳ Pending Review"
                 tvStatus.setBackgroundResource(R.drawable.status_pending_bg)
                 btnWithdraw.visibility = View.VISIBLE
                 updateTimeline(false, false, "Client is reviewing your application", "Waiting for client decision")
             }
-            "accepted" -> {
-                tvStatus.text = "Accepted ✓"
+            "accepted", "hired" -> {
+                tvStatus.text = "✅ Hired"
                 tvStatus.setBackgroundResource(R.drawable.status_accepted_bg)
                 btnWithdraw.visibility = View.GONE
-                updateTimeline(true, true, "Application reviewed", "Congratulations! Your application was accepted")
+                updateTimeline(true, true, "Application reviewed", "Congratulations! You've been hired")
             }
             "rejected" -> {
-                tvStatus.text = "Rejected"
+                tvStatus.text = "❌ Rejected"
                 tvStatus.setBackgroundResource(R.drawable.status_rejected_bg)
                 btnWithdraw.visibility = View.GONE
                 updateTimeline(true, true, "Application reviewed", "Application was not selected")
             }
             "withdrawn" -> {
-                tvStatus.text = "Withdrawn"
+                tvStatus.text = "📤 Withdrawn"
                 tvStatus.setBackgroundResource(R.drawable.status_withdrawn_bg)
                 btnWithdraw.visibility = View.GONE
                 updateTimeline(false, false, "Application withdrawn", "You withdrew this application")
+            }
+            else -> {
+                tvStatus.text = status
+                tvStatus.setBackgroundResource(R.drawable.status_pending_bg)
+                btnWithdraw.visibility = View.VISIBLE
+                updateTimeline(false, false, "Application submitted", "Waiting for client response")
             }
         }
     }
@@ -206,26 +203,26 @@ class ApplicationDetailsActivity : AppCompatActivity() {
         // Update review step
         if (isReviewed) {
             ivReviewStatus.setImageResource(R.drawable.ic_check_circle)
-            ivReviewStatus.setColorFilter(resources.getColor(R.color.green))
+            ivReviewStatus.setColorFilter(ContextCompat.getColor(this, R.color.success_color))
         } else {
             ivReviewStatus.setImageResource(R.drawable.ic_circle)
-            ivReviewStatus.setColorFilter(resources.getColor(R.color.gray))
+            ivReviewStatus.setColorFilter(ContextCompat.getColor(this, R.color.gray))
         }
         tvReviewStatus.text = reviewText
 
         // Update decision step
         if (isDecided) {
             ivDecisionStatus.setImageResource(R.drawable.ic_check_circle)
-            ivDecisionStatus.setColorFilter(resources.getColor(R.color.green))
+            ivDecisionStatus.setColorFilter(ContextCompat.getColor(this, R.color.success_color))
         } else {
             ivDecisionStatus.setImageResource(R.drawable.ic_circle)
-            ivDecisionStatus.setColorFilter(resources.getColor(R.color.gray))
+            ivDecisionStatus.setColorFilter(ContextCompat.getColor(this, R.color.gray))
         }
         tvDecisionStatus.text = decisionText
     }
-
     private fun viewJobPosting() {
         val job = jobDetails ?: return
+
         val intent = Intent(this, JobDetailsActivity::class.java).apply {
             putExtra("JOB_ID", job.jobId)
             putExtra("JOB_TITLE", job.title)
@@ -247,45 +244,71 @@ class ApplicationDetailsActivity : AppCompatActivity() {
     }
 
     private fun performWithdrawal() {
+        val application = currentApplication ?: return
+
         progressBar.visibility = View.VISIBLE
         btnWithdraw.isEnabled = false
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Update application status in Firebase
-                // TODO: Implement actual withdrawal in Firebase
-                // firebaseService.updateApplicationStatus(applicationId, "withdrawn")
-
-                // Simulate API call
-                delay(1500)
+                Log.d("ApplicationDetails", "🟡 Withdrawing application: ${application.applicationId}")
+                val result = firebaseService.updateApplicationStatus(application.applicationId, "withdrawn")
 
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     btnWithdraw.isEnabled = true
 
-                    // Update UI
-                    currentApplication = currentApplication?.copy(status = "withdrawn")
-                    currentApplication?.let { application ->
-                        setApplicationStatus(application.status)
-                    }
+                    if (result.isSuccess) {
+                        // Update local data
+                        currentApplication = currentApplication?.copy(status = "withdrawn")
+                        currentApplication?.let { app ->
+                            setApplicationStatus(app.status)
+                        }
 
-                    Toast.makeText(
-                        this@ApplicationDetailsActivity,
-                        "Application withdrawn successfully",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                        Toast.makeText(
+                            this@ApplicationDetailsActivity,
+                            "Application withdrawn successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        // Optional: Finish activity or go back
+                        // finish()
+                    } else {
+                        val error = result.exceptionOrNull()?.message ?: "Unknown error"
+                        Toast.makeText(
+                            this@ApplicationDetailsActivity,
+                            "Failed to withdraw: $error",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             } catch (e: Exception) {
+                Log.e("ApplicationDetails", "💥 Error withdrawing: ${e.message}", e)
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     btnWithdraw.isEnabled = true
                     Toast.makeText(
                         this@ApplicationDetailsActivity,
-                        "Error withdrawing application: ${e.message}",
+                        "Error: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
+        }
+    }
+
+    private fun showErrorState(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        // You could also show a specific error layout here
+        finish() // Go back if data can't be loaded
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh data when returning to this activity
+        val applicationId = intent.getStringExtra("APPLICATION_ID") ?: ""
+        if (applicationId.isNotEmpty()) {
+            loadApplicationDetails()
         }
     }
 }

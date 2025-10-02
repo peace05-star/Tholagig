@@ -9,6 +9,7 @@ import student.projects.tholagig.models.User
 import student.projects.tholagig.models.Job
 import student.projects.tholagig.models.JobApplication
 import java.util.Date
+import kotlin.math.abs
 
 class FirebaseService {
     private val db = FirebaseFirestore.getInstance()
@@ -173,6 +174,167 @@ class FirebaseService {
         } catch (e: Exception) {
             Result.success(emptyList())
         }
+    }
+
+    // Add this function to your FirebaseService class
+    suspend fun getSimilarJobsAdvanced(currentJob: Job): Result<List<Job>> {
+        return try {
+            Log.d("FirebaseService", "🔍 Finding similar jobs for: ${currentJob.title}")
+            Log.d("FirebaseService", "Category: ${currentJob.category}, Skills: ${currentJob.skillsRequired}")
+
+            // Try multiple query strategies in sequence
+            val similarJobs = findSimilarJobsWithMultipleStrategies(currentJob)
+
+            Log.d("FirebaseService", "✅ Total similar jobs found: ${similarJobs.size}")
+            Result.success(similarJobs)
+        } catch (e: Exception) {
+            Log.e("FirebaseService", "❌ Error in getSimilarJobsAdvanced: ${e.message}")
+            Result.success(emptyList()) // Return empty instead of failure for graceful handling
+        }
+    }
+
+    private suspend fun findSimilarJobsWithMultipleStrategies(currentJob: Job): List<Job> {
+        val allPossibleJobs = mutableListOf<Job>()
+
+        // Strategy 1: Same category + skills overlap (highest priority)
+        val categorySkillsJobs = getJobsByCategoryAndSkills(currentJob)
+        allPossibleJobs.addAll(categorySkillsJobs)
+        Log.d("FirebaseService", "Strategy 1 - Category+Skills: ${categorySkillsJobs.size} jobs")
+
+        // Strategy 2: Same category only
+        if (allPossibleJobs.size < 4) {
+            val categoryOnlyJobs = getJobsByCategoryOnly(currentJob)
+                .filterNot { job -> allPossibleJobs.any { it.jobId == job.jobId } }
+            allPossibleJobs.addAll(categoryOnlyJobs)
+            Log.d("FirebaseService", "Strategy 2 - Category only: ${categoryOnlyJobs.size} jobs")
+        }
+
+        // Strategy 3: Skills overlap only (different category)
+        if (allPossibleJobs.size < 4) {
+            val skillsOnlyJobs = getJobsBySkillsOnly(currentJob)
+                .filterNot { job -> allPossibleJobs.any { it.jobId == job.jobId } }
+            allPossibleJobs.addAll(skillsOnlyJobs)
+            Log.d("FirebaseService", "Strategy 3 - Skills only: ${skillsOnlyJobs.size} jobs")
+        }
+
+        // Strategy 4: Any recent jobs as fallback
+        if (allPossibleJobs.size < 3) {
+            val recentJobs = getRecentJobs(6)
+                .filterNot { job -> allPossibleJobs.any { it.jobId == job.jobId } || job.jobId == currentJob.jobId }
+            allPossibleJobs.addAll(recentJobs)
+            Log.d("FirebaseService", "Strategy 4 - Recent jobs: ${recentJobs.size} jobs")
+        }
+
+        // Remove current job and duplicates, then score and sort by relevance
+        return allPossibleJobs
+            .distinctBy { it.jobId }
+            .filter { it.jobId != currentJob.jobId }
+            .map { job -> Pair(job, calculateRelevanceScore(currentJob, job)) }
+            .sortedByDescending { it.second }
+            .take(6) // Return top 6 most relevant
+            .map { it.first }
+    }
+
+    private suspend fun getJobsByCategoryAndSkills(currentJob: Job): List<Job> {
+        return try {
+            // Get jobs in same category first
+            val categoryQuery = db.collection("jobs")
+                .whereEqualTo("category", currentJob.category)
+                .whereNotEqualTo("jobId", currentJob.jobId)
+                .limit(10)
+
+            val snapshot = categoryQuery.get().await()
+            val jobsInCategory = snapshot.toObjects(Job::class.java)
+
+            // Filter by skills overlap
+            jobsInCategory.filter { job ->
+                val commonSkills = currentJob.skillsRequired.intersect(job.skillsRequired.toSet()).size
+                commonSkills >= 1 // At least 1 common skill
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseService", "Error in getJobsByCategoryAndSkills: ${e.message}")
+            emptyList()
+        }
+    }
+
+    private suspend fun getJobsByCategoryOnly(currentJob: Job): List<Job> {
+        return try {
+            val query = db.collection("jobs")
+                .whereEqualTo("category", currentJob.category)
+                .whereNotEqualTo("jobId", currentJob.jobId)
+                .limit(8)
+
+            val snapshot = query.get().await()
+            snapshot.toObjects(Job::class.java)
+        } catch (e: Exception) {
+            Log.e("FirebaseService", "Error in getJobsByCategoryOnly: ${e.message}")
+            emptyList()
+        }
+    }
+
+    private suspend fun getJobsBySkillsOnly(currentJob: Job): List<Job> {
+        return try {
+            // Get recent jobs and filter by skills
+            val recentJobs = getRecentJobs(15)
+            recentJobs.filter { job ->
+                job.jobId != currentJob.jobId &&
+                        job.category != currentJob.category && // Different category but similar skills
+                        currentJob.skillsRequired.intersect(job.skillsRequired.toSet()).isNotEmpty()
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseService", "Error in getJobsBySkillsOnly: ${e.message}")
+            emptyList()
+        }
+    }
+
+    private suspend fun getRecentJobs(limit: Int): List<Job> {
+        return try {
+            val query = db.collection("jobs")
+                .orderBy("postedAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .limit(limit.toLong()) // Convert Int to Long
+
+            val snapshot = query.get().await()
+            snapshot.toObjects(Job::class.java)
+        } catch (e: Exception) {
+            Log.e("FirebaseService", "Error in getRecentJobs: ${e.message}")
+            emptyList()
+        }
+    }
+    private fun calculateRelevanceScore(currentJob: Job, otherJob: Job): Double {
+        var score = 0.0
+
+        // 1. Category match (high weight)
+        if (currentJob.category == otherJob.category) {
+            score += 3.0
+            Log.d("Relevance", "${otherJob.title}: +3.0 for category match")
+        }
+
+        // 2. Skills overlap (highest weight)
+        val commonSkills = currentJob.skillsRequired.intersect(otherJob.skillsRequired.toSet()).size
+        val totalSkills = currentJob.skillsRequired.size
+        val skillsScore = if (totalSkills > 0) (commonSkills.toDouble() / totalSkills) * 4.0 else 0.0
+        score += skillsScore
+        Log.d("Relevance", "${otherJob.title}: +$skillsScore for $commonSkills/$totalSkills skills")
+
+        // 3. Experience level match
+        if (currentJob.experienceLevel == otherJob.experienceLevel) {
+            score += 2.0
+            Log.d("Relevance", "${otherJob.title}: +2.0 for experience level match")
+        }
+
+        // 4. Budget similarity
+        val budgetDifference = abs(currentJob.budget - otherJob.budget)
+        val budgetRatio = budgetDifference / maxOf(currentJob.budget, otherJob.budget)
+        if (budgetRatio < 0.3) { // Within 30% budget range
+            score += 1.5
+            Log.d("Relevance", "${otherJob.title}: +1.5 for budget similarity")
+        } else if (budgetRatio < 0.6) { // Within 60% budget range
+            score += 0.5
+            Log.d("Relevance", "${otherJob.title}: +0.5 for budget range")
+        }
+
+        Log.d("Relevance", "${otherJob.title}: TOTAL SCORE = $score")
+        return score
     }
 
     suspend fun getJobById(jobId: String): Result<Job> {
@@ -457,4 +619,6 @@ class FirebaseService {
             Result.failure(e)
         }
     }
+
+
 }
