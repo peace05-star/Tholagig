@@ -4,14 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.*
@@ -22,6 +20,10 @@ import student.projects.tholagig.models.JobApplication
 import student.projects.tholagig.network.FirebaseService
 import student.projects.tholagig.network.SessionManager
 import java.util.Date
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import student.projects.tholagig.dashboards.FreelancerDashboardActivity
+import student.projects.tholagig.jobs.JobBrowseActivity
+import student.projects.tholagig.profile.ProfileActivity
 
 class MyApplicationsActivity : AppCompatActivity() {
 
@@ -30,8 +32,7 @@ class MyApplicationsActivity : AppCompatActivity() {
     private lateinit var tvApplicationsCount: TextView
     private lateinit var emptyState: View
     private lateinit var progressBar: ProgressBar
-
-    private lateinit var toolbar: MaterialToolbar
+    private lateinit var bottomNavigationView: BottomNavigationView
 
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
@@ -41,8 +42,6 @@ class MyApplicationsActivity : AppCompatActivity() {
     private val filteredApplications = mutableListOf<JobApplication>()
     private val selectedStatuses = mutableSetOf<String>()
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_applications)
@@ -51,9 +50,9 @@ class MyApplicationsActivity : AppCompatActivity() {
         firebaseService = FirebaseService()
 
         initializeViews()
-        setupToolbar()
         setupRecyclerView()
         setupClickListeners()
+        setupBottomNavigation()
         loadApplications()
     }
 
@@ -63,31 +62,41 @@ class MyApplicationsActivity : AppCompatActivity() {
         tvApplicationsCount = findViewById(R.id.tvApplicationsCount)
         emptyState = findViewById(R.id.emptyState)
         progressBar = findViewById(R.id.progressBar)
-        toolbar = findViewById(R.id.toolbar)
+        bottomNavigationView = findViewById(R.id.bottom_navigation)
     }
 
-    private fun setupToolbar() {
-        Log.d("MyApplications", "Setting up toolbar")
-
-        // Set the Toolbar as the ActionBar
-        setSupportActionBar(toolbar)
-
-        // Enable the back button (the arrow icon)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
-
-        // Hide the default title since we have a custom TextView
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-
-        // Option 1: Handle back button with navigation click listener
-        toolbar.setNavigationOnClickListener {
-            Log.d("MyApplications", "Back button clicked")
-            onBackPressed()
+    private fun setupBottomNavigation() {
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    val intent = Intent(this, FreelancerDashboardActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(0, 0)
+                    true
+                }
+                R.id.nav_jobs -> {
+                    val intent = Intent(this, JobBrowseActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(0, 0)
+                    true
+                }
+                R.id.nav_applications -> {
+                    // Already on applications page - just refresh
+                    loadApplications()
+                    true
+                }
+                R.id.nav_profile -> {
+                    val intent = Intent(this, ProfileActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(0, 0)
+                    true
+                }
+                else -> false
+            }
         }
 
-        Log.d("MyApplications", "Toolbar setup complete")
+        bottomNavigationView.selectedItemId = R.id.nav_applications
     }
-
 
     private fun setupRecyclerView() {
         applicationsAdapter = ApplicationAdapter(
@@ -120,8 +129,12 @@ class MyApplicationsActivity : AppCompatActivity() {
             applyFilters()
         }
 
+        // Browse Jobs button in empty state
+        emptyState.findViewById<android.widget.Button>(R.id.browseJobsButton)?.setOnClickListener {
+            val intent = Intent(this, JobBrowseActivity::class.java)
+            startActivity(intent)
+        }
     }
-
 
     private fun loadApplications() {
         progressBar.visibility = View.VISIBLE
@@ -131,12 +144,13 @@ class MyApplicationsActivity : AppCompatActivity() {
 
         if (userId.isEmpty()) {
             progressBar.visibility = View.GONE
-            tvApplicationsCount.text = "Please login to view applications"
+            showEmptyState("Please login to view applications")
             return
         }
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                Log.d("MyApplications", "🟡 Fetching applications for user: $userId")
                 val result = firebaseService.getApplicationsByFreelancer(userId)
 
                 withContext(Dispatchers.Main) {
@@ -146,20 +160,28 @@ class MyApplicationsActivity : AppCompatActivity() {
                         allApplications.clear()
                         val applications = result.getOrNull() ?: emptyList()
 
-                        if (applications.isEmpty()) {
-                            // Load mock data for demonstration
-                            loadMockApplications()
-                        } else {
+                        Log.d("MyApplications", "🟢 Loaded ${applications.size} applications from Firebase")
+
+                        if (applications.isNotEmpty()) {
                             allApplications.addAll(applications)
                             applyFilters()
                             updateApplicationsCount()
+                            Toast.makeText(
+                                this@MyApplicationsActivity,
+                                "Loaded ${applications.size} applications",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            showEmptyState("No applications yet. Start applying to jobs!")
+                            Log.d("MyApplications", "🟡 No applications found in Firebase")
                         }
                     } else {
-                        // Load mock data if Firebase fails
-                        loadMockApplications()
+                        val error = result.exceptionOrNull()
+                        Log.e("MyApplications", "🔴 Failed to load applications: ${error?.message}")
+                        showEmptyState("Failed to load applications. Please try again.")
                         Toast.makeText(
                             this@MyApplicationsActivity,
-                            "Using demo data",
+                            "Error: ${error?.message}",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -167,68 +189,16 @@ class MyApplicationsActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
-                    // Load mock data on error
-                    loadMockApplications()
+                    Log.e("MyApplications", "🔴 Exception loading applications: ${e.message}")
+                    showEmptyState("Error loading applications. Please check your connection.")
                     Toast.makeText(
                         this@MyApplicationsActivity,
-                        "Error loading applications: ${e.message}",
+                        "Network error: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
         }
-    }
-
-    private fun loadMockApplications() {
-        allApplications.clear()
-        allApplications.addAll(
-            listOf(
-                JobApplication(
-                    applicationId = "app_1",
-                    jobId = "job_1",
-                    freelancerId = "user_123",
-                    freelancerName = "You",
-                    freelancerEmail = "user@example.com",
-                    coverLetter = "I'm very interested in this mobile app development position...",
-                    proposedBudget = 15000.0,
-                    status = "pending",
-                    appliedAt = Date(System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000),
-                    clientId = "client_1",
-                    jobTitle = "Mobile App Developer",
-                    clientName = "Tech Solutions SA"
-                ),
-                JobApplication(
-                    applicationId = "app_2",
-                    jobId = "job_2",
-                    freelancerId = "user_123",
-                    freelancerName = "You",
-                    freelancerEmail = "user@example.com",
-                    coverLetter = "I have extensive experience in UI/UX design...",
-                    proposedBudget = 12000.0,
-                    status = "accepted",
-                    appliedAt = Date(System.currentTimeMillis() - 5 * 24 * 60 * 60 * 1000),
-                    clientId = "client_2",
-                    jobTitle = "UI/UX Designer",
-                    clientName = "Creative Agency"
-                ),
-                JobApplication(
-                    applicationId = "app_3",
-                    jobId = "job_3",
-                    freelancerId = "user_123",
-                    freelancerName = "You",
-                    freelancerEmail = "user@example.com",
-                    coverLetter = "I'm excited about this backend development opportunity...",
-                    proposedBudget = 20000.0,
-                    status = "rejected",
-                    appliedAt = Date(System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000),
-                    clientId = "client_3",
-                    jobTitle = "Backend Developer",
-                    clientName = "FinTech Startup"
-                )
-            )
-        )
-        applyFilters()
-        updateApplicationsCount()
     }
 
     private fun applyFilters() {
@@ -265,10 +235,34 @@ class MyApplicationsActivity : AppCompatActivity() {
         if (filteredApplications.isEmpty()) {
             rvApplications.visibility = View.GONE
             emptyState.visibility = View.VISIBLE
+
+            // Update empty state message based on filters
+            val emptyStateText = emptyState.findViewById<TextView>(R.id.emptyStateText)
+            val emptyStateSubtext = emptyState.findViewById<TextView>(R.id.emptyStateSubtext)
+
+            if (allApplications.isEmpty()) {
+                emptyStateText?.text = "No Applications Yet"
+                emptyStateSubtext?.text = "Start applying to jobs to see your applications here"
+            } else {
+                emptyStateText?.text = "No Matching Applications"
+                emptyStateSubtext?.text = "Try changing your filters to see more applications"
+            }
         } else {
             rvApplications.visibility = View.VISIBLE
             emptyState.visibility = View.GONE
         }
+    }
+
+    private fun showEmptyState(message: String) {
+        tvApplicationsCount.text = message
+        rvApplications.visibility = View.GONE
+        emptyState.visibility = View.VISIBLE
+
+        val emptyStateText = emptyState.findViewById<TextView>(R.id.emptyStateText)
+        val emptyStateSubtext = emptyState.findViewById<TextView>(R.id.emptyStateSubtext)
+
+        emptyStateText?.text = "No Applications"
+        emptyStateSubtext?.text = message
     }
 
     private fun viewApplicationDetails(application: JobApplication) {
@@ -296,28 +290,31 @@ class MyApplicationsActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Update application status in Firebase
-                val updatedApplication = application.copy(status = "withdrawn")
-                // TODO: Implement actual withdrawal in Firebase
-                // firebaseService.updateApplication(updatedApplication)
-
-                // Simulate API call
-                delay(1000)
+                val result = firebaseService.updateApplicationStatus(application.applicationId, "withdrawn")
 
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
 
-                    // Update local data
-                    val index = allApplications.indexOfFirst { it.applicationId == application.applicationId }
-                    if (index != -1) {
-                        allApplications[index] = updatedApplication
-                        applyFilters()
-                    }
+                    if (result.isSuccess) {
+                        // Update local data
+                        val index = allApplications.indexOfFirst { it.applicationId == application.applicationId }
+                        if (index != -1) {
+                            allApplications[index] = application.copy(status = "withdrawn")
+                            applyFilters()
+                        }
 
-                    Toast.makeText(
-                        this@MyApplicationsActivity,
-                        "Application withdrawn successfully",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                        Toast.makeText(
+                            this@MyApplicationsActivity,
+                            "Application withdrawn successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            this@MyApplicationsActivity,
+                            "Error withdrawing application: ${result.exceptionOrNull()?.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -330,5 +327,12 @@ class MyApplicationsActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh data when returning to this activity
+        bottomNavigationView.selectedItemId = R.id.nav_applications
+        loadApplications()
     }
 }

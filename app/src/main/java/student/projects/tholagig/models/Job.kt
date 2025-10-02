@@ -24,7 +24,9 @@ data class Job(
     val experienceLevel: String? = "",
     val projectType: String? = "",
     val estimatedDuration: String? = ""
+
 )
+
 {
     // Helper function to get the correct date
     fun getPostDate(): Date {
