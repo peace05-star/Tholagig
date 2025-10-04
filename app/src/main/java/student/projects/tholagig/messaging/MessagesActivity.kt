@@ -14,6 +14,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import student.projects.tholagig.R
 import student.projects.tholagig.dashboards.FreelancerDashboardActivity
 import student.projects.tholagig.jobs.JobBrowseActivity
+import student.projects.tholagig.jobs.MyApplicationsActivity
 import student.projects.tholagig.models.Message
 import student.projects.tholagig.network.SessionManager
 import student.projects.tholagig.profile.ProfileActivity
@@ -96,24 +97,29 @@ class MessagesActivity : AppCompatActivity() {
             bottomNavigationView.setOnNavigationItemSelectedListener { item ->
                 when (item.itemId) {
                     R.id.nav_home -> {
-                        navigateToActivity(FreelancerDashboardActivity::class.java)
+                        val intent = Intent(this, FreelancerDashboardActivity::class.java)
+                        startActivity(intent)
+                        finish()
                         true
                     }
                     R.id.nav_jobs -> {
-                        navigateToActivity(JobBrowseActivity::class.java)
+                        val intent = Intent(this, JobBrowseActivity::class.java)
+                        startActivity(intent)
+                        finish()
                         true
                     }
                     R.id.nav_applications -> {
-                        Toast.makeText(this, "Applications feature coming soon", Toast.LENGTH_SHORT).show()
+                        startActivity(Intent(this, MyApplicationsActivity::class.java))
+                        finish()
                         true
                     }
                     R.id.nav_messages -> {
-                        // Navigate back to conversations list
-                        navigateToActivity(ConversationsActivity::class.java)
+                    //already here
                         true
                     }
                     R.id.nav_profile -> {
-                        navigateToActivity(ProfileActivity::class.java)
+                        startActivity(Intent(this, ProfileActivity::class.java))
+                        finish()
                         true
                     }
                     else -> false

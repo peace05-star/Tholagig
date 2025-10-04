@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -37,6 +38,8 @@ class MyApplicationsActivity : AppCompatActivity() {
     private lateinit var toolbar: MaterialToolbar
     private lateinit var bottomNavigationView: BottomNavigationView
 
+    private lateinit var btnBrowseJobss: Button
+
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
     private lateinit var applicationsAdapter: ApplicationAdapter
@@ -68,6 +71,7 @@ class MyApplicationsActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         toolbar = findViewById(R.id.toolbar)
         bottomNavigationView = findViewById(R.id.bottom_navigation)
+        btnBrowseJobss = findViewById(R.id.btnBrowseJobs)
     }
 
     private fun setupBottomNavigation() {
@@ -146,6 +150,10 @@ class MyApplicationsActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
+btnBrowseJobss.setOnClickListener {
+    val intent = Intent(this, JobBrowseActivity::class.java)
+    startActivity(intent)
+}
         chipGroupStatus.setOnCheckedStateChangeListener { group, checkedIds ->
             selectedStatuses.clear()
             checkedIds.forEach { chipId ->
