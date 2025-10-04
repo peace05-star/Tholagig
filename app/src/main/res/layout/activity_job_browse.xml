@@ -25,7 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Job Title"
+            android:text="Browse Jobs"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/white" />
