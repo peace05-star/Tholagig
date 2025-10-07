@@ -2,7 +2,10 @@
 
 *Connecting Talent with Opportunity in South Africa*
 
-Github Link: https://github.com/peace05-star/Tholagig.git 
+**Github Link**: https://github.com/peace05-star/Tholagig.git 
+
+**Youtube Demo Video Link**: https://youtu.be/6-ASEepyqAQ?feature=shared
+
 ## Introduction
 South Africa has one of the largest informal labour markets in the world. Millions of people rely on "piece jobs" or as locals call them, skropes. These are temporary or once-off jobs that provide short-term income but often lack structure, visibility, and dignity.
 While global freelancing platforms like Fiverr and Freelancer exist, they are not widely known or relevant to the South African majority. They do not speak the language of the people or reflect the realities of working in townships, rural communities, or low-data environments.
