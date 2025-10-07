@@ -410,7 +410,7 @@ class JobDetailsActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 FirebaseFirestore.getInstance()
-                    .collection("jobApplications")
+                    .collection("applications")
                     .document(application.applicationId)
                     .set(application)
                     .await()

@@ -240,26 +240,53 @@ class ProfileActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Update user data in Firestore
-                val updatedUser = currentUser?.copy(
-                    fullName = fullName,
-                    phone = phone,
-                    skills = if (sessionManager.getUserType() == "freelancer") skills.split(",") else emptyList(),
-                    company = company,
-                    bio = bio
+                val userId = sessionManager.getUserId() ?: ""
+                val userType = sessionManager.getUserType() ?: "freelancer"
+
+                // Create update data map
+                val updateData = mutableMapOf<String, Any>(
+                    "fullName" to fullName,
+                    "phone" to phone,
+                    "bio" to bio
                 )
 
-                // TODO: Implement actual Firestore update
-                // firebaseService.updateUser(updatedUser)
+                // Add user type specific fields
+                if (userType == "freelancer") {
+                    val skillsList = skills.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                    updateData["skills"] = skillsList
+                } else {
+                    updateData["company"] to company
+                }
+
+                // Actually update in Firestore using the correct method
+                val updateResult = firebaseService.updateUser(userId, updateData)
 
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     btnUpdateProfile.isEnabled = true
-                    Toast.makeText(
-                        this@ProfileActivity,
-                        "Profile updated successfully!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+
+                    if (updateResult.isSuccess) {
+                        // Update current user object
+                        currentUser = currentUser?.copy(
+                            fullName = fullName,
+                            phone = phone,
+                            bio = bio,
+                            skills = if (userType == "freelancer") skills.split(",").map { it.trim() } else emptyList(),
+                            company = company
+                        )
+
+                        Toast.makeText(
+                            this@ProfileActivity,
+                            "Profile updated successfully!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            this@ProfileActivity,
+                            "Error updating profile: ${updateResult.exceptionOrNull()?.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -274,7 +301,6 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
     }
-
     private fun changePassword() {
         Toast.makeText(this, "Change password feature coming soon!", Toast.LENGTH_SHORT).show()
         // TODO: Implement password change dialog

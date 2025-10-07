@@ -213,6 +213,8 @@ class FreelancerDashboardActivity : AppCompatActivity() {
     private fun loadDashboardStats() {
         val userId = sessionManager.getUserId() ?: return
 
+        Log.d("DashboardStats", "🟡 Loading stats for user: $userId")
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Load user's applications to calculate stats
@@ -221,6 +223,13 @@ class FreelancerDashboardActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     if (applicationsResult.isSuccess) {
                         val applications = applicationsResult.getOrNull() ?: emptyList()
+
+                        Log.d("DashboardStats", "🟢 Loaded ${applications.size} applications from Firebase")
+
+                        // Debug: Print all applications to see what's being loaded
+                        applications.forEach { app ->
+                            Log.d("DashboardStats", "📄 App: ${app.jobTitle} - Status: ${app.status} - Budget: ${app.proposedBudget}")
+                        }
 
                         // Calculate statistics
                         val totalApplied = applications.size
@@ -237,14 +246,16 @@ class FreelancerDashboardActivity : AppCompatActivity() {
                         tvActiveCount.text = activeApplications.toString()
                         tvEarnings.text = "R ${"%.2f".format(totalEarnings)}"
 
-                        Log.d("Dashboard", "📊 Stats: $totalApplied applied, $activeApplications active, R$totalEarnings earnings")
+                        Log.d("DashboardStats", "📊 Final Stats: $totalApplied applied, $activeApplications active, R$totalEarnings earnings")
                     } else {
+                        val error = applicationsResult.exceptionOrNull()?.message ?: "Unknown error"
+                        Log.e("DashboardStats", "🔴 Failed to load applications: $error")
                         // Fallback to placeholder stats if data loading fails
                         setPlaceholderStats()
                     }
                 }
             } catch (e: Exception) {
-                Log.e("Dashboard", "💥 Error loading stats: ${e.message}", e)
+                Log.e("DashboardStats", "💥 Error loading stats: ${e.message}", e)
                 withContext(Dispatchers.Main) {
                     setPlaceholderStats()
                 }
