@@ -4,6 +4,8 @@
 
 **Github Link**: https://github.com/peace05-star/Tholagig.git 
 
+**School Github Link**: https://github.com/IIEMSA/opsc6312-poe-part-2-Peacesalomyphiri.git
+
 **Vimeo Demo Video Link**: [https://youtu.be/6-ASEepyqAQ?feature=shared](https://vimeo.com/1125288731?share=copy)
 
 ## Introduction
