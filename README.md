@@ -4,7 +4,7 @@
 
 **Github Link**: https://github.com/peace05-star/Tholagig.git 
 
-**Youtube Demo Video Link**: https://youtu.be/6-ASEepyqAQ?feature=shared
+**Vimeo Demo Video Link**: [https://youtu.be/6-ASEepyqAQ?feature=shared](https://vimeo.com/1125288731?share=copy)
 
 ## Introduction
 South Africa has one of the largest informal labour markets in the world. Millions of people rely on "piece jobs" or as locals call them, skropes. These are temporary or once-off jobs that provide short-term income but often lack structure, visibility, and dignity.
