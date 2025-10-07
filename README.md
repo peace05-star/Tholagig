@@ -2,7 +2,10 @@
 
 *Connecting Talent with Opportunity in South Africa*
 
-**Github Link**: https://github.com/peace05-star/Tholagig.git 
+**Github Link**: https://github.com/peace05-star/Tholagig.git  **(Please Check this one)**
+
+**(The school link has been giving issues, when I tried to push, it said repository not found.)**
+
 
 **School Github Link**: https://github.com/IIEMSA/opsc6312-poe-part-2-Peacesalomyphiri.git
 
