@@ -204,6 +204,17 @@
                             android:textColor="@color/gray"
                             android:textSize="16sp" />
 
+                        <!-- Add this to your action buttons section -->
+                        <Button
+                            android:id="@+id/btnChangeLanguage"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/change_language"
+                            android:textColor="@color/orange"
+                            android:background="@android:color/transparent"
+                            android:textSize="14sp"
+                            android:layout_marginBottom="16dp" />
+
                     </com.google.android.material.textfield.TextInputLayout>
 
                 </LinearLayout>
@@ -375,6 +386,8 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="16dp" />
+
+
 
                 <Button
                     android:id="@+id/btnChangePassword"

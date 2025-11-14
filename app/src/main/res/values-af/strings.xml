@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Basic Strings -->
+    <string name="app_name">TholaGig</string>
+    <string name="welcome">Welkom</string>
+    <string name="find_your_next_gig">Vind jou volgende werk</string>
+    <string name="loading">Laai...</string>
+    <string name="error">Fout</string>
+    <string name="success">Sukses</string>
+    <string name="cancel">Kanselleer</string>
+    <string name="back">Terug</string>
+
+    <!-- Navigation -->
+    <string name="home">Tuis</string>
+    <string name="jobs">Werk</string>
+    <string name="applications">Aansoeke</string>
+    <string name="messages">Boodskappe</string>
+    <string name="profile">Profiel</string>
+
+    <!-- Job Related -->
+    <string name="search_jobs">Soek werk</string>
+    <string name="browse_jobs">Blaai werk</string>
+    <string name="my_applications">My Aansoeke</string>
+
+    <!-- Messaging -->
+    <string name="start_conversation">Begin \'n Gesprek</string>
+    <string name="type_message">Tik \'n boodskap...</string>
+    <string name="send">Stuur</string>
+
+    <!-- Authentication -->
+    <string name="login">Teken In</string>
+    <string name="register">Registreer</string>
+    <string name="email">E-pos</string>
+    <string name="password">Wagwoord</string>
+    <string name="change_password">Verander Wagwoord</string> <!-- ADD THIS LINE -->
+    <!-- Add these to your existing values/strings.xml -->
+    <string name="save_job">Stoor Werk</string>
+    <string name="search_jobs_hint">Soek werk volgens titel, vaardighede of kategorie</string>
+    <string name="remote">Afstands</string>
+    <string name="design">Ontwerp</string>
+    <string name="development">Ontwikkeling</string>
+    <string name="marketing">Bemarking</string>
+    <string name="sort">Sorteer</string>
+    <string name="sort_newest">Sorteer: Nuutste</string>
+    <string name="sort_highest_budget">Hoogste Begroting</string>
+    <string name="sort_lowest_budget">Laagste Begroting</string>
+    <string name="sort_deadline">Naaste Sperdatum</string>
+    <string name="filters">Filters</string>
+    <string name="no_jobs_found">Geen werk gevind nie</string>
+    <string name="one_job_found">1 werk gevind</string>
+    <string name="jobs_found">werk gevind</string>
+    <string name="no_jobs_match_filters">Geen werk pas by jou filters nie</string>
+    <string name="sort_by">Sorteer volgens</string>
+    <string name="advanced_filters_coming_soon">Gevorderde filters kom binnekort!</string>
+    <string name="save_feature_coming_soon">Stoor funksie kom binnekort!</string>
+    <!-- Profile Section -->
+    <!-- Add these to your existing strings.xml -->
+
+    <!-- Job Creation Strings -->
+    <string name="job_title">Werk Titel</string>
+    <string name="job_description">Werk Beskrywing</string>
+    <string name="budget">Begroting (R)</string>
+    <string name="skills_required">Vaardighede Vereis</string>
+    <string name="location">Ligging</string>
+    <string name="deadline">Sperdatum</string>
+    <string name="job_details">Werk Besonderhede</string>
+    <string name="requirements">Vereistes</string>
+    <string name="job_title_required">Werk titel word vereis</string>
+    <string name="job_description_required">Werk beskrywing word vereis</string>
+    <string name="valid_budget_required">Geldige begroting word vereis</string>
+    <string name="job_created_success">Werk suksesvol geskep!</string>
+    <string name="error_creating_job">Fout met skep van werk</string>
+    <!-- Client Specific Strings -->
+    <string name="client">Kliënt</string>
+    <string name="manage_your_projects">Bestuur jou projekte</string>
+    <string name="posted_jobs">Geplaasde Werk</string>
+    <string name="total_spent">Totaal Bestee</string>
+    <string name="create_job">Skep Werk</string>
+    <string name="my_jobs">My Werk</string>
+    <string name="recent_jobs">Onlangse Werk</string>
+    <string name="no_jobs_posted">Nog geen werk geplaas nie</string>
+    <string name="post_job">Plaas Werk</string>
+    <string name="manage_applications">Bestuur Aansoeke</string>
+    <string name="applications_management">Aansoeke Bestuur</string>
+
+    <!-- Navigation for Client -->
+    <string name="nav_create">Skep</string>
+    <string name="nav_my_jobs">My Werk</string>
+    <!-- Login Activity Specific Strings -->
+    <string name="welcome_back">Welkom Terug</string>
+    <string name="sign_in_to_continue">Teken in om voort te gaan</string>
+    <string name="forgot_password">Wagwoord Vergeet?</string>
+    <string name="sign_in">TEKEN IN</string>
+    <string name="or_continue_with">OF GAAAN VOORT MET</string>
+    <string name="dont_have_account">HET JY NIE \'N REKENING NIE?</string>
+    <string name="sign_up">REGISTREER</string>
+    <string name="email_required">E-pos word vereis</string>
+    <string name="valid_email_required">Geldige e-pos word vereis</string>
+    <string name="password_required">Wagwoord word vereis</string>
+    <string name="password_min_length">Wagwoord moet ten minste 6 karakters wees</string>
+    <string name="login_successful">Inlogging suksesvol!</string>
+    <string name="account_not_setup">Rekening nie behoorlik opgestel nie. Registreer asseblief weer.</string>
+    <string name="invalid_email_password">Ongeldige e-pos of wagwoord</string>
+    <string name="login_failed">Inlogging het misluk</string>
+    <string name="unknown_error">Onbekende fout</string>
+    <string name="password_reset_coming_soon">Wagwoord herstel funksie kom binnekort</string>
+    <string name="google_sign_in">Teken in met Google</string>
+    <string name="facebook_sign_in">Teken in met Facebook</string>
+    <!-- Add these to your existing values-af/strings.xml -->
+    <string name="filter_remote_jobs">Filtreer afstandswerk</string>
+    <string name="filter_design_jobs">Filtreer ontwerpwerk</string>
+    <string name="filter_development_jobs">Filtreer ontwikkelingswerk</string>
+    <string name="filter_marketing_jobs">Filtreer bemarkingswerk</string>
+    <string name="loading_jobs">Laai werk…</string>
+    <string name="error_loading_jobs">Fout met laai van werk</string>
+    <string name="update_profile">Opdateer Profiel</string>
+    <string name="logout">Teken Uit</string>
+    <string name="full_name">Volle Naam</string>
+    <string name="phone">Foon</string>
+    <string name="change_photo">Verander Foto</string>
+    <string name="account_type">Rekening Tipe</string>
+    <string name="client_account">Kliënt Rekening</string>
+    <string name="freelancer_account">Vryskut Rekening</string>
+    <string name="enter_your_name">Voer jou naam in</string>
+    <string name="enter_phone_number">Voer foonnommer in</string>
+    <string name="tell_about_yourself">Vertel ons oor jouself</string>
+    <string name="add_your_skills">Voeg jou vaardighede by</string>
+    <string name="enter_company_name">Voer maatskappynaam in</string>
+    <string name="company_information">Maatskappy Inligting</string>
+    <string name="company_name">Maatskappynaam</string>
+    <string name="skills">Vaardighede</string>
+    <string name="skills_hint">Jou vaardighede (komma geskei)</string>
+    <string name="bio">Bio</string>
+
+    <!-- Validation & Messages -->
+    <string name="full_name_required">Volle naam word vereis</string>
+    <string name="user_data_not_found">Gebruikersdata nie gevind nie, werk asseblief jou profiel op</string>
+    <string name="error_loading_profile">Fout met laai van profiel</string>
+    <string name="error_updating_profile">Fout met opdateer van profiel</string>
+    <string name="profile_updated_success">Profiel suksesvol opgedateer!</string>
+    <string name="change_password_coming_soon">Verander wagwoord funksie kom binnekort!</string>
+    <string name="change_photo_coming_soon">Verander profielfoto funksie kom binnekort!</string>
+    <string name="logout_confirmation">Is jy seker jy wil uitteken?</string>
+    <!-- Add these strings -->
+    <string name="welcome_user">Welkom, %s!</string>
+    <string name="freelancer">Vryskut</string>
+    <string name="quick_actions">Vinnige Aksies</string>
+    <string name="recommended_jobs">Aanbevole Werk</string>
+    <string name="applied_jobs">Aangemelde Werk</string>
+    <string name="active_jobs">Aktiewe Werk</string>
+    <string name="total_earnings">Totale Verdienste</string>
+    <string name="no_jobs_available">Geen werk beskikbaar op die oomblik</string>
+    <string name="failed_to_load_jobs">Kon nie werk laai nie</string>
+    <string name="network_error">Netwerkfout</string>
+    <string name="messages_feature_coming_soon">Boodskappe funksie kom binnekort!</string>
+    <!-- Language Support -->
+    <string name="change_language">Verander Taal</string>
+    <string name="language_english">Engels</string>
+    <string name="language_zulu">Zoeloe</string>
+    <string name="language_afrikaans">Afrikaans</string>
+    <string name="select_language">Kies Taal</string>
+
+    <string name="facebook_sso_coming_soon">Facebook SSO kom binnekort!</string>
+    <string name="unable_to_start_google_signin">Kan nie Google Sign-In begin nie</string>
+    <string name="welcome_message">Welkom %s!</string>
+    <string name="sign_in_cancelled">Aantekening gekanselleer</string>
+    <string name="sso_authentication_failed">SSO-verifikasie het misluk</string>
+
+</resources>

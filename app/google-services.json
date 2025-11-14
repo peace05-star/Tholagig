@@ -12,7 +12,20 @@
           "package_name": "student.projects.tholagig"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "731977982569-2t841f31aagv6jf4qclb571qut2ebvor.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "student.projects.tholagig",
+            "certificate_hash": "2d9e231809d1504349796a0b6407dca1d41df12d"
+          }
+        },
+        {
+          "client_id": "731977982569-t5tfudlqjp47h3rorksenh9mj9fps3a6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCBXfy-zdFbpJcTFhU3iSbB1mPm6UL1c1E"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "731977982569-t5tfudlqjp47h3rorksenh9mj9fps3a6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

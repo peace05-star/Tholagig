@@ -19,6 +19,27 @@
         android:theme="@style/Theme.Tholagig"
         tools:ignore="ExtraText">
 
+        <!-- 🔥 ADD THESE FOR GOOGLE SIGN-IN -->
+        <meta-data
+            android:name="com.google.android.gms.auth.api.phone.REQUEST_NONCE"
+            android:value="tholagig_nonce" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <!-- 🔥 ADD GOOGLE SIGN-IN ACTIVITY -->
+        <activity
+            android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
+            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <!-- FCM Service must be INSIDE the application tag -->
         <service
             android:name=".messaging.MyFirebaseMessagingService"

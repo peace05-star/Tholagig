@@ -1,46 +1,49 @@
 package student.projects.tholagig.dashboards
 
+import android.content.Intent
 import android.os.Bundle
-import android.view.View
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import student.projects.tholagig.BaseActivity
 import student.projects.tholagig.R
 import student.projects.tholagig.Adapters.JobsAdapter
 import student.projects.tholagig.jobs.JobBrowseActivity
 import student.projects.tholagig.jobs.JobDetailsActivity
-import student.projects.tholagig.models.Job
-import student.projects.tholagig.profile.ProfileActivity
-import android.content.Intent
 import student.projects.tholagig.jobs.MyApplicationsActivity
-import student.projects.tholagig.network.SessionManager
-import student.projects.tholagig.network.FirebaseService // ADD THIS IMPORT
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import android.util.Log
-import kotlinx.coroutines.* // ADD THIS IMPORT
 import student.projects.tholagig.messaging.ConversationsActivity
-import student.projects.tholagig.messaging.MessagesActivity
+import student.projects.tholagig.models.Job
+import student.projects.tholagig.network.FirebaseService
+import student.projects.tholagig.network.SessionManager
+import student.projects.tholagig.profile.ProfileActivity
 
-class FreelancerDashboardActivity : AppCompatActivity() {
+class FreelancerDashboardActivity : BaseActivity() {
 
     private lateinit var tvWelcome: TextView
     private lateinit var tvAppliedCount: TextView
     private lateinit var tvActiveCount: TextView
     private lateinit var tvEarnings: TextView
+    private lateinit var tvAppliedLabel: TextView // Changed from tvAppliedJobs
+    private lateinit var tvActiveLabel: TextView // Changed from tvActiveJobs
+    private lateinit var tvEarningsLabel: TextView // Changed from tvTotalEarnings
     private lateinit var layoutBrowseJobs: LinearLayout
     private lateinit var layoutMyApplications: LinearLayout
     private lateinit var btnProfile: ImageButton
     private lateinit var rvJobs: RecyclerView
     private lateinit var bottomNavigationView: BottomNavigationView
-    private lateinit var progressBar: View // ADD PROGRESS BAR IF YOU HAVE ONE
 
     private lateinit var jobsAdapter: JobsAdapter
     private lateinit var sessionManager: SessionManager
-    private lateinit var firebaseService: FirebaseService // ADD THIS
+    private lateinit var firebaseService: FirebaseService
     private val jobList = mutableListOf<Job>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,15 +51,16 @@ class FreelancerDashboardActivity : AppCompatActivity() {
         setContentView(R.layout.activity_freelancer_dashboard)
 
         sessionManager = SessionManager(this)
-        firebaseService = FirebaseService() // INITIALIZE FIREBASE SERVICE
+        firebaseService = FirebaseService()
 
         initializeViews()
         setupRecyclerView()
         setupClickListeners()
         setupBottomNavigation()
         loadUserData()
-        loadJobsFromFirebase() // REPLACE loadMockData() WITH THIS
-        loadDashboardStats() // ADD THIS FOR STATS
+        loadJobsFromFirebase()
+        loadDashboardStats()
+        updateUITexts()
     }
 
     private fun initializeViews() {
@@ -64,13 +68,14 @@ class FreelancerDashboardActivity : AppCompatActivity() {
         tvAppliedCount = findViewById(R.id.tvAppliedCount)
         tvActiveCount = findViewById(R.id.tvActiveCount)
         tvEarnings = findViewById(R.id.tvEarnings)
+        tvAppliedLabel = findViewById(R.id.tvAppliedLabel) // Correct ID
+        tvActiveLabel = findViewById(R.id.tvActiveLabel) // Correct ID
+        tvEarningsLabel = findViewById(R.id.tvEarningsLabel) // Correct ID
         layoutBrowseJobs = findViewById(R.id.btnBrowseJobs)
         layoutMyApplications = findViewById(R.id.btnMyApplications)
         btnProfile = findViewById(R.id.btnProfile)
         rvJobs = findViewById(R.id.rvJobs)
         bottomNavigationView = findViewById(R.id.bottom_navigation)
-        // If you have a progress bar, initialize it here
-        // progressBar = findViewById(R.id.progressBar)
     }
 
     private fun setupBottomNavigation() {
@@ -86,20 +91,23 @@ class FreelancerDashboardActivity : AppCompatActivity() {
                     R.id.nav_jobs -> {
                         val intent = Intent(this, JobBrowseActivity::class.java)
                         startActivity(intent)
+                        finish()
                         true
                     }
                     R.id.nav_applications -> {
                         val intent = Intent(this, MyApplicationsActivity::class.java)
                         startActivity(intent)
+                        finish()
+                        true
+                    }
+                    R.id.nav_messages -> {
+                        // Navigate to Messages/Conversations
+                        navigateToMessages()
                         true
                     }
                     R.id.nav_profile -> {
                         val intent = Intent(this, ProfileActivity::class.java)
                         startActivity(intent)
-                        true
-                    }
-                    R.id.nav_messages -> {
-                        startActivity(Intent(this, ConversationsActivity::class.java))
                         finish()
                         true
                     }
@@ -114,10 +122,41 @@ class FreelancerDashboardActivity : AppCompatActivity() {
         }
     }
 
+    private fun navigateToMessages() {
+        try {
+            val intent = Intent(this, ConversationsActivity::class.java)
+            startActivity(intent)
+            finish()
+        } catch (e: Exception) {
+            Log.e("Navigation", "Messages activity not found: ${e.message}")
+            Toast.makeText(this, getString(R.string.messages_feature_coming_soon), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateUITexts() {
+        // Update UI texts based on current language
+        val welcomeText = String.format(getString(R.string.welcome_user), extractNameFromEmail(sessionManager.getEmail() ?: "User"))
+        tvWelcome.text = welcomeText
+
+        // Update quick action texts
+        findViewById<TextView>(R.id.tvQuickActions).text = getString(R.string.quick_actions)
+        findViewById<TextView>(R.id.tvRecommendedJobs).text = getString(R.string.recommended_jobs)
+
+        // Update card titles with correct TextViews
+        tvAppliedLabel.text = getString(R.string.applied_jobs)
+        tvActiveLabel.text = getString(R.string.active_jobs)
+        tvEarningsLabel.text = getString(R.string.total_earnings)
+
+        // Also update the quick action buttons if needed
+        findViewById<TextView>(R.id.tvBrowseJobs).text = getString(R.string.browse_jobs)
+        findViewById<TextView>(R.id.tvMyApplications).text = getString(R.string.my_applications)
+    }
+
     private fun loadUserData() {
         val userEmail = sessionManager.getEmail() ?: "User"
         val userName = extractNameFromEmail(userEmail)
-        tvWelcome.text = "Welcome, $userName!"
+        val welcomeText = String.format(getString(R.string.welcome_user), userName)
+        tvWelcome.text = welcomeText
     }
 
     private fun extractNameFromEmail(email: String): String {
@@ -125,7 +164,7 @@ class FreelancerDashboardActivity : AppCompatActivity() {
             val namePart = email.substringBefore("@")
             namePart.replaceFirstChar { it.uppercase() }
         } catch (e: Exception) {
-            "Freelancer"
+            getString(R.string.freelancer)
         }
     }
 
@@ -154,56 +193,49 @@ class FreelancerDashboardActivity : AppCompatActivity() {
     }
 
     private fun loadJobsFromFirebase() {
-        // Show loading state if you have a progress bar
-        // progressBar.visibility = View.VISIBLE
-
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                Log.d("Dashboard", "🟡 Loading featured jobs from Firebase")
+                Log.d("Dashboard", "Loading featured jobs from Firebase")
                 val result = firebaseService.getJobs()
 
                 withContext(Dispatchers.Main) {
-                    // progressBar.visibility = View.GONE
-
                     if (result.isSuccess) {
                         val jobs = result.getOrNull() ?: emptyList()
-                        Log.d("Dashboard", "🟢 Loaded ${jobs.size} jobs from Firebase")
+                        Log.d("Dashboard", "Loaded ${jobs.size} jobs from Firebase")
 
                         jobList.clear()
 
                         // Show only featured/recent jobs (limit to 3-5 for dashboard)
                         val featuredJobs = jobs
-                            .sortedByDescending { it.postedAt } // Show newest first
-                            .take(4) // Limit to 4 jobs for dashboard
+                            .sortedByDescending { it.postedAt }
+                            .take(4)
 
                         jobList.addAll(featuredJobs)
                         jobsAdapter.notifyDataSetChanged()
 
                         if (featuredJobs.isEmpty()) {
-                            // Show empty state if no jobs
                             Toast.makeText(
                                 this@FreelancerDashboardActivity,
-                                "No jobs available at the moment",
+                                getString(R.string.no_jobs_available),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
                     } else {
                         val error = result.exceptionOrNull()?.message ?: "Unknown error"
-                        Log.e("Dashboard", "🔴 Failed to load jobs: $error")
+                        Log.e("Dashboard", "Failed to load jobs: $error")
                         Toast.makeText(
                             this@FreelancerDashboardActivity,
-                            "Failed to load jobs",
+                            getString(R.string.failed_to_load_jobs),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
                 }
             } catch (e: Exception) {
-                Log.e("Dashboard", "💥 Error loading jobs: ${e.message}", e)
+                Log.e("Dashboard", "Error loading jobs: ${e.message}", e)
                 withContext(Dispatchers.Main) {
-                    // progressBar.visibility = View.GONE
                     Toast.makeText(
                         this@FreelancerDashboardActivity,
-                        "Network error: ${e.message}",
+                        "${getString(R.string.network_error)}: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -214,8 +246,6 @@ class FreelancerDashboardActivity : AppCompatActivity() {
     private fun loadDashboardStats() {
         val userId = sessionManager.getUserId() ?: return
 
-        Log.d("DashboardStats", "🟡 Loading stats for user: $userId")
-
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Load user's applications to calculate stats
@@ -224,13 +254,6 @@ class FreelancerDashboardActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     if (applicationsResult.isSuccess) {
                         val applications = applicationsResult.getOrNull() ?: emptyList()
-
-                        Log.d("DashboardStats", "🟢 Loaded ${applications.size} applications from Firebase")
-
-                        // Debug: Print all applications to see what's being loaded
-                        applications.forEach { app ->
-                            Log.d("DashboardStats", "📄 App: ${app.jobTitle} - Status: ${app.status} - Budget: ${app.proposedBudget}")
-                        }
 
                         // Calculate statistics
                         val totalApplied = applications.size
@@ -247,16 +270,14 @@ class FreelancerDashboardActivity : AppCompatActivity() {
                         tvActiveCount.text = activeApplications.toString()
                         tvEarnings.text = "R ${"%.2f".format(totalEarnings)}"
 
-                        Log.d("DashboardStats", "📊 Final Stats: $totalApplied applied, $activeApplications active, R$totalEarnings earnings")
+                        Log.d("Dashboard", "Stats: $totalApplied applied, $activeApplications active, R$totalEarnings earnings")
                     } else {
-                        val error = applicationsResult.exceptionOrNull()?.message ?: "Unknown error"
-                        Log.e("DashboardStats", "🔴 Failed to load applications: $error")
                         // Fallback to placeholder stats if data loading fails
                         setPlaceholderStats()
                     }
                 }
             } catch (e: Exception) {
-                Log.e("DashboardStats", "💥 Error loading stats: ${e.message}", e)
+                Log.e("Dashboard", "Error loading stats: ${e.message}", e)
                 withContext(Dispatchers.Main) {
                     setPlaceholderStats()
                 }
@@ -299,5 +320,6 @@ class FreelancerDashboardActivity : AppCompatActivity() {
         // Refresh data when returning to dashboard
         loadJobsFromFirebase()
         loadDashboardStats()
+        updateUITexts()
     }
 }

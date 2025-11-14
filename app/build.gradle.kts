@@ -92,4 +92,10 @@ dependencies {
 
     implementation("com.google.code.gson:gson:2.10.1")
 
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+// Facebook Login
+    implementation("com.facebook.android:facebook-login:16.3.0")
+// For OAuth
+    implementation("com.auth0.android:jwtdecode:2.0.2")
+
 }

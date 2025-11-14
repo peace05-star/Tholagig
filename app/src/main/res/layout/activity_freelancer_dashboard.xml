@@ -31,7 +31,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TholaGig"
+                    android:text="@string/app_name"
                     android:textColor="@color/orange"
                     android:textSize="20sp"
                     android:textStyle="bold"
@@ -43,6 +43,7 @@
                     android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_profile"
+                    android:contentDescription="@string/profile"
                     android:layout_gravity="end" />
 
             </com.google.android.material.appbar.MaterialToolbar>
@@ -59,15 +60,16 @@
                     android:id="@+id/tvWelcome"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Welcome, Freelancer!"
+                    android:text="@string/welcome_user"
                     android:textColor="@color/white"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/tvSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Find your next gig"
+                    android:text="@string/find_your_next_gig"
                     android:textColor="@color/white"
                     android:textSize="14sp"
                     android:layout_marginTop="4dp" />
@@ -112,9 +114,10 @@
                                 android:textStyle="bold" />
 
                             <TextView
+                                android:id="@+id/tvAppliedLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Applied Jobs"
+                                android:text="@string/applied_jobs"
                                 android:textColor="@color/white"
                                 android:textSize="12sp" />
 
@@ -148,9 +151,10 @@
                                 android:textStyle="bold" />
 
                             <TextView
+                                android:id="@+id/tvActiveLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Active Jobs"
+                                android:text="@string/active_jobs"
                                 android:textColor="@color/gray"
                                 android:textSize="12sp" />
 
@@ -184,9 +188,10 @@
                                 android:textStyle="bold" />
 
                             <TextView
+                                android:id="@+id/tvEarningsLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Total Earnings"
+                                android:text="@string/total_earnings"
                                 android:textColor="@color/gray"
                                 android:textSize="12sp" />
 
@@ -200,9 +205,10 @@
 
             <!-- Quick Actions -->
             <TextView
+                android:id="@+id/tvQuickActions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Quick Actions"
+                android:text="@string/quick_actions"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -244,12 +250,13 @@
                             android:src="@drawable/ic_search"
                             app:tint="@color/white"
                             android:layout_marginBottom="4dp"
-                            android:contentDescription="Search Jobs" />
+                            android:contentDescription="@string/search_jobs" />
 
                         <TextView
+                            android:id="@+id/tvBrowseJobs"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Browse Jobs"
+                            android:text="@string/browse_jobs"
                             android:textColor="@color/white"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -286,12 +293,13 @@
                             android:src="@drawable/ic_applications"
                             app:tint="@color/orange"
                             android:layout_marginBottom="4dp"
-                            android:contentDescription="My Applications" />
+                            android:contentDescription="@string/my_applications" />
 
                         <TextView
+                            android:id="@+id/tvMyApplications"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="My Applications"
+                            android:text="@string/my_applications"
                             android:textColor="@color/orange"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -304,9 +312,10 @@
 
             <!-- Recent Jobs Section -->
             <TextView
+                android:id="@+id/tvRecommendedJobs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Recommended Jobs"
+                android:text="@string/recommended_jobs"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:textStyle="bold"

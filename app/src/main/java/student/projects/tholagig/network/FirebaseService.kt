@@ -960,7 +960,176 @@ class FirebaseService {
         }
     }
 
+    // Add these methods to your FirebaseService class
 
+    /**
+     * Get user by email for SSO login
+     */
+    private suspend fun getUserByEmail(email: String): User? {
+        return try {
+            Log.d(TAG, "🟡 Searching for user by email: $email")
+
+            val query = db.collection("users")
+                .whereEqualTo("email", email)
+                .limit(1)
+                .get()
+                .await()
+
+            if (!query.isEmpty) {
+                val document = query.documents[0]
+                val user = document.toObject(User::class.java)
+                Log.d(TAG, "🟢 User found by email: ${user?.fullName}")
+                user
+            } else {
+                Log.d(TAG, "🟡 No user found with email: $email")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 Error getting user by email: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Enhanced SSO registration/login method
+     */
+    suspend fun registerOrLoginWithSSO(user: User): Result<User> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            Log.d(TAG, "🟡 Starting SSO registration/login for: ${user.email}")
+
+            // Check if user already exists in Firestore
+            val existingUser = getUserByEmail(user.email)
+
+            val userToSave = if (existingUser != null) {
+                Log.d(TAG, "🟡 User exists, updating with SSO info")
+                // Update existing user with SSO info and last login
+                existingUser.copy(
+                    isSSO = true,
+                    ssoProvider = user.ssoProvider,
+                    ssoId = user.ssoId,
+                    profileImage = user.profileImage ?: existingUser.profileImage,
+                    lastLogin = System.currentTimeMillis(),
+                    updatedAt = System.currentTimeMillis()
+                )
+            } else {
+                Log.d(TAG, "🟡 Creating new SSO user")
+                // Create new user with SSO info
+                user.copy(
+                    userId = user.userId, // Use the Firebase Auth UID
+                    createdAt = System.currentTimeMillis(),
+                    lastLogin = System.currentTimeMillis(),
+                    updatedAt = System.currentTimeMillis()
+                )
+            }
+
+            // Save user to Firestore
+            val saveResult = saveUser(userToSave)
+
+            if (saveResult.isSuccess) {
+                Log.d(TAG, "🟢 SSO User ${if (existingUser != null) "updated" else "registered"}: ${user.email}")
+                Result.success(userToSave)
+            } else {
+                Log.e(TAG, "🔴 Failed to save SSO user")
+                Result.failure(Exception("Failed to save user data"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 SSO authentication error: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Save user to Firestore
+     */
+    private suspend fun saveUser(user: User): Result<User> {
+        return try {
+            Log.d(TAG, "🟡 Saving user to Firestore: ${user.userId}")
+
+            db.collection("users")
+                .document(user.userId)
+                .set(user)
+                .await()
+
+            Log.d(TAG, "🟢 User saved successfully: ${user.userId}")
+            Result.success(user)
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 Error saving user: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Get user profile picture URL
+     */
+    suspend fun getUserProfilePicture(userId: String): Result<String> {
+        return try {
+            val userDoc = db.collection("users").document(userId).get().await()
+
+            if (userDoc.exists()) {
+                val profileImage = userDoc.getString("profileImage")
+                if (!profileImage.isNullOrEmpty()) {
+                    Result.success(profileImage)
+                } else {
+                    // Return default avatar or empty string
+                    Result.success("")
+                }
+            } else {
+                Result.success("")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 Error getting profile picture: ${e.message}")
+            Result.success("") // Return empty string instead of failure
+        }
+    }
+
+    /**
+     * Update user profile picture
+     */
+    suspend fun updateUserProfilePicture(userId: String, imageUrl: String): Result<Boolean> {
+        return try {
+            db.collection("users")
+                .document(userId)
+                .update("profileImage", imageUrl)
+                .await()
+
+            Log.d(TAG, "🟢 Profile picture updated for user: $userId")
+            Result.success(true)
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 Error updating profile picture: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Copy user data (useful for creating new users from existing ones)
+     */
+    suspend fun copyUserData(sourceUserId: String, targetUserId: String): Result<Boolean> {
+        return try {
+            val sourceUserDoc = db.collection("users").document(sourceUserId).get().await()
+
+            if (sourceUserDoc.exists()) {
+                val sourceUser = sourceUserDoc.toObject(User::class.java)
+                if (sourceUser != null) {
+                    val copiedUser = sourceUser.copy(
+                        userId = targetUserId,
+                        createdAt = System.currentTimeMillis(),
+                        updatedAt = System.currentTimeMillis()
+                    )
+
+                    saveUser(copiedUser)
+                    Log.d(TAG, "🟢 User data copied from $sourceUserId to $targetUserId")
+                    Result.success(true)
+                } else {
+                    Result.failure(Exception("Failed to convert source user data"))
+                }
+            } else {
+                Result.failure(Exception("Source user not found"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 Error copying user data: ${e.message}")
+            Result.failure(e)
+        }
+    }
     private fun showLocalNotification(message: Message) {
         // This would create a system notification
         // You'd need to implement NotificationCompat.Builder here

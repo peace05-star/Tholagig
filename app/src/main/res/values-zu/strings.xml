@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Basic Strings -->
+    <string name="app_name">TholaGig</string>
+    <string name="welcome">Siyakwamukela</string>
+    <string name="find_your_next_gig">Thola umsebenzi wakho olandelayo</string>
+    <string name="loading">Ilayisha...</string>
+    <string name="error">Iphutha</string>
+    <string name="success">Impumelelo</string>
+    <string name="cancel">Khansela</string>
+    <string name="back">Emuva</string>
+
+    <!-- Navigation -->
+    <string name="home">Ikhaya</string>
+    <string name="jobs">Imisebenzi</string>
+    <string name="applications">Izicelo</string>
+    <string name="messages">Imilayezo</string>
+    <string name="profile">Iphrofayili</string>
+
+    <!-- Job Related -->
+    <string name="search_jobs">Sesha imisebenzi</string>
+    <string name="browse_jobs">Dlulisa amehlo imisebenzi</string>
+    <string name="my_applications">Izicelo zami</string>
+
+    <!-- Messaging -->
+    <string name="start_conversation">Qala ingxoxo</string>
+    <string name="type_message">Thayipha umlayezo...</string>
+    <string name="send">Thumela</string>
+
+    <!-- Authentication -->
+    <string name="login">Ngena ngemvume</string>
+    <string name="register">Bhalisa</string>
+    <string name="email">I-imeyili</string>
+    <string name="password">Iphasiwedi</string>
+    <string name="change_password">Shintsha iphasiwedi</string> <!-- ADD THIS LINE -->
+
+    <!-- Profile Section -->
+    <string name="update_profile">Lungisa iphrofayili</string>
+    <string name="logout">Phuma</string>
+    <string name="full_name">Igama eliphelele</string>
+    <string name="phone">Ifoni</string>
+    <string name="change_photo">Shintsha isithombe</string>
+    <string name="account_type">Uhlobo lwe-akhawunti</string>
+    <string name="client_account">I-akhawunti yeklayenti</string>
+    <string name="freelancer_account">I-akhawunti ye-freelancer</string>
+    <string name="enter_your_name">Faka igama lakho</string>
+    <string name="enter_phone_number">Faka inombolo yocingo</string>
+    <string name="tell_about_yourself">Sitshele ngaye</string>
+    <string name="add_your_skills">Engeza amakhono akho</string>
+    <string name="enter_company_name">Faka igama lenkampani</string>
+    <string name="company_information">Ulwazi lwenkampani</string>
+    <string name="company_name">Igama Lenkampani</string>
+    <string name="skills">Amakhono</string>
+    <string name="skills_hint">Amakhono akho (ahlukaniswe ngekhoma)</string>
+    <string name="bio">I-Bio</string>
+    <!-- Add these to your existing values-zu/strings.xml -->
+    <!-- Client Specific Strings -->
+    <!-- Add these to your existing strings.xml -->
+
+    <string name="client">Iklayenti</string>
+    <string name="manage_your_projects">Phatha amaphrojekthi akho</string>
+    <string name="posted_jobs">Imisebenzi Ethunyelwe</string>
+    <string name="total_spent">Isamba Esichithiwe</string>
+    <string name="create_job">Dala Umsebenzi</string>
+    <string name="my_jobs">Imisebenzi Yami</string>
+    <string name="recent_jobs">Imisebenzi Yakamuva</string>
+    <string name="no_jobs_posted">Ayikho imisebenzi ethunyelwe okwamanje</string>
+    <string name="post_job">Thumela Umsebenzi</string>
+    <string name="manage_applications">Phatha Izicelo</string>
+    <string name="applications_management">Ukuphathwa Kwezicelo</string>
+    <!-- Job Creation Strings -->
+    <string name="job_title">Isihloko Somsebenzi</string>
+    <string name="job_description">Incazelo Yomsebenzi</string>
+    <string name="budget">Isabelomali (R)</string>
+    <string name="skills_required">Amakhono Adingekayo</string>
+    <string name="location">Indawo</string>
+    <string name="deadline">Usuku Lokugcina</string>
+    <string name="job_details">Imininingwane Yomsebenzi</string>
+    <string name="requirements">Izidingo</string>
+    <string name="job_title_required">Isihloko somsebenzi siyadingeka</string>
+    <string name="job_description_required">Incazelo yomsebenzi iyadingeka</string>
+    <string name="valid_budget_required">Isabelomali esivumelekile siyadingeka</string>
+    <string name="job_created_success">Umsebenzi udaliwe ngempumelelo!</string>
+    <string name="error_creating_job">Iphutha ekudalweni komsebenzi</string>
+    <!-- Navigation for Client -->
+    <string name="nav_create">Dala</string>
+    <string name="nav_my_jobs">Imisebenzi Yami</string>
+    <!-- Login Activity Specific Strings -->
+    <string name="welcome_back">Wamukelekile Emuva</string>
+    <string name="sign_in_to_continue">Ngena ngemvume ukuze uqhubeke</string>
+    <string name="forgot_password">Ukhohlwe Iphasiwedi?</string>
+    <string name="sign_in">Ngena NGEMVUME</string>
+    <string name="or_continue_with">NOMA QHUBEKA NGE</string>
+    <string name="dont_have_account">AWUNAWO I-AKHAWUNTI?</string>
+    <string name="sign_up">BHALISA</string>
+    <string name="email_required">I-imeyili iyadingeka</string>
+    <string name="valid_email_required">I-imeyili evumelekile iyadingeka</string>
+    <string name="password_required">Iphasiwedi iyadingeka</string>
+    <string name="password_min_length">Iphasiwedi kufanele ibe nezinhlamvu eziyisithupha okungenani</string>
+    <string name="login_successful">Ukungena ngemvume kuphumelele!</string>
+    <string name="account_not_setup">I-akhawunti ayisethwe kahle. Sicela ubhalise futhi.</string>
+    <string name="invalid_email_password">I-imeyili engavumelekile noma iphasiwedi</string>
+    <string name="login_failed">Ukungena ngemvume kwehlulekile</string>
+    <string name="unknown_error">Iphutha elingaziwa</string>
+    <string name="password_reset_coming_soon">Isici sokusetha kabusha iphasiwedi sizayo maduze</string>
+    <string name="google_sign_in">Ngena ngemvume nge-Google</string>
+    <string name="facebook_sign_in">Ngena ngemvume nge-Facebook</string>
+    <!-- Add these to your existing values-zu/strings.xml -->
+    <string name="filter_remote_jobs">Hlunga imisebenzi yakude</string>
+    <string name="filter_design_jobs">Hlunga imisebenzi yedizayini</string>
+    <string name="filter_development_jobs">Hlunga imisebenzi yentuthuko</string>
+    <string name="filter_marketing_jobs">Hlunga imisebenzi yokumaketha</string>
+    <string name="loading_jobs">Ilayisha imisebenzi…</string>
+    <string name="error_loading_jobs">Iphutha ekulayisheni imisebenzi</string>
+    <string name="save_job">Gcina Umsebenzi</string>
+    <string name="search_jobs_hint">Sesha imisebenzi ngegama, amakhono noma isigaba</string>
+    <string name="remote">Kude</string>
+    <string name="design">Idizayini</string>
+    <string name="development">Intuthuko</string>
+    <string name="marketing">Ukumaketha</string>
+    <string name="sort">Hlela</string>
+    <string name="sort_newest">Hlela: Okusha</string>
+    <string name="sort_highest_budget">Ibhajethi Ephakeme</string>
+    <string name="sort_lowest_budget">Ibhajethi Ephansi</string>
+    <string name="sort_deadline">Usuku Oluseduze</string>
+    <string name="filters">Izihlungi</string>
+    <string name="no_jobs_found">Ayikho imisebenzi etholiwe</string>
+    <string name="one_job_found">Umsebenzi owodwa utholakele</string>
+    <string name="jobs_found">imisebenzi itholakele</string>
+    <string name="no_jobs_match_filters">Ayikho imisebenzi ehambisana nezihlungi zakho</string>
+    <string name="sort_by">Hlela nge</string>
+    <string name="advanced_filters_coming_soon">Izihlungi eziphambili zizayo maduze!</string>
+    <string name="save_feature_coming_soon">Isici sokugcina sizayo maduze!</string>
+    <!-- Validation & Messages -->
+    <string name="full_name_required">Igama eliphelele liyadingeka</string>
+    <string name="user_data_not_found">Idatha yomsebenzisi ayitholakalanga, sicela ulungise iphrofayili yakho</string>
+    <string name="error_loading_profile">Iphutha ekulayisheni iphrofayili</string>
+    <string name="error_updating_profile">Iphutha ekulungiseni iphrofayili</string>
+    <string name="profile_updated_success">Iphrofayili ilungiswe ngempumelelo!</string>
+    <string name="change_password_coming_soon">Isici sokushintsha iphasiwedi sizayo maduze!</string>
+    <string name="change_photo_coming_soon">Isici sokushintsha isithombe sephrofayili sizayo maduze!</string>
+    <string name="logout_confirmation">Uqinisekile ukuthi ufuna ukuphuma?</string>
+    <!-- Add these strings -->
+    <string name="welcome_user">Siyakwamukela, %s!</string>
+    <string name="freelancer">I-Freelancer</string>
+    <string name="quick_actions">Izenzo Ezesheshayo</string>
+    <string name="recommended_jobs">Imisebenzi Ekhuthazwayo</string>
+    <string name="applied_jobs">Imisebenzi Efakiwe</string>
+    <string name="active_jobs">Imisebenzi Esasebenza</string>
+    <string name="total_earnings">Iholo Lonke</string>
+    <string name="no_jobs_available">Ayikho imisebenzi okwamanje</string>
+    <string name="failed_to_load_jobs">Ihlulekile ukulayisha imisebenzi</string>
+    <string name="network_error">Iphutha lenethiwekhi</string>
+    <string name="messages_feature_coming_soon">Isici semilayezo sizayo maduze!</string>
+    <!-- Language Support -->
+    <string name="change_language">Shintsha ulimi</string>
+    <string name="language_english">IsiNgisi</string>
+    <string name="language_zulu">isiZulu</string>
+    <string name="language_afrikaans">IsiBhunu</string>
+    <string name="select_language">Khetha ulimi</string>
+
+    <string name="facebook_sso_coming_soon">I-Facebook SSO iza kungekudala!</string>
+    <string name="unable_to_start_google_signin">Ayikwazi ukuqala i-Google Sign-In</string>
+    <string name="welcome_message">Wamukelekile %s!</string>
+    <string name="sign_in_cancelled">Ukungena kukhanseliwe</string>
+    <string name="sso_authentication_failed">Ukuqinisekiswa kwe-SSO kwehlulekile</string>
+
+</resources>

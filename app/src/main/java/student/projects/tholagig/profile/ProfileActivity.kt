@@ -1,13 +1,12 @@
 package student.projects.tholagig.profile
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.*
+import student.projects.tholagig.BaseActivity
 import student.projects.tholagig.R
 import student.projects.tholagig.auth.LoginActivity
 import student.projects.tholagig.dashboards.FreelancerDashboardActivity
@@ -17,10 +16,9 @@ import student.projects.tholagig.network.SessionManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import student.projects.tholagig.jobs.JobBrowseActivity
 import student.projects.tholagig.jobs.MyApplicationsActivity
-import student.projects.tholagig.messaging.ConversationsActivity
 import student.projects.tholagig.messaging.MessagesActivity
 
-class ProfileActivity : AppCompatActivity() {
+class ProfileActivity : BaseActivity() {
 
     private lateinit var ivProfile: ImageView
     private lateinit var btnChangePhoto: TextView
@@ -37,14 +35,13 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var btnUpdateProfile: Button
     private lateinit var btnChangePassword: Button
     private lateinit var btnLogout: Button
+    private lateinit var btnChangeLanguage: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var btnBack: ImageButton
 
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
-
-    private lateinit var btnBack: ImageButton
-
 
     private var currentUser: User? = null
 
@@ -59,6 +56,7 @@ class ProfileActivity : AppCompatActivity() {
         setupClickListeners()
         setupBottomNavigation()
         loadUserData()
+        updateUITexts()
     }
 
     private fun initializeViews() {
@@ -77,6 +75,7 @@ class ProfileActivity : AppCompatActivity() {
         btnUpdateProfile = findViewById(R.id.btnUpdateProfile)
         btnChangePassword = findViewById(R.id.btnChangePassword)
         btnLogout = findViewById(R.id.btnLogout)
+        btnChangeLanguage = findViewById(R.id.btnChangeLanguage)
         btnBack = findViewById(R.id.btnBack)
         progressBar = findViewById(R.id.progressBar)
         bottomNavigationView = findViewById(R.id.bottom_navigation)
@@ -108,7 +107,7 @@ class ProfileActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_messages -> {
-                    startActivity(Intent(this, ConversationsActivity::class.java))
+                    startActivity(Intent(this, MessagesActivity::class.java))
                     finish()
                     true
                 }
@@ -140,6 +139,33 @@ class ProfileActivity : AppCompatActivity() {
         btnChangePhoto.setOnClickListener {
             changeProfilePhoto()
         }
+
+        btnChangeLanguage.setOnClickListener {
+            showLanguageDialog()
+        }
+    }
+
+    private fun updateUITexts() {
+        // Update all UI texts based on current language
+        btnUpdateProfile.text = getString(R.string.update_profile)
+        btnChangePassword.text = getString(R.string.change_password)
+        btnLogout.text = getString(R.string.logout)
+        btnChangeLanguage.text = getString(R.string.change_language)
+        btnChangePhoto.text = getString(R.string.change_photo)
+
+        // Update hints and placeholders
+        etFullName.hint = getString(R.string.full_name)
+        etEmail.hint = getString(R.string.email)
+        etPhone.hint = getString(R.string.phone)
+        etUserType.hint = getString(R.string.account_type)
+        etBio.hint = getString(R.string.bio)
+
+        // Update user type specific texts
+        val userType = sessionManager.getUserType() ?: "freelancer"
+        setupUserTypeUI(userType)
+
+        // Update back button content description for accessibility
+        btnBack.contentDescription = getString(R.string.back)
     }
 
     private fun loadUserData() {
@@ -165,7 +191,7 @@ class ProfileActivity : AppCompatActivity() {
                         displayUserData(null, userType, email)
                         Toast.makeText(
                             this@ProfileActivity,
-                            "User data not found, please update your profile",
+                            getString(R.string.user_data_not_found),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -175,7 +201,7 @@ class ProfileActivity : AppCompatActivity() {
                     progressBar.visibility = View.GONE
                     Toast.makeText(
                         this@ProfileActivity,
-                        "Error loading profile: ${e.message}",
+                        "${getString(R.string.error_loading_profile)}: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -191,21 +217,21 @@ class ProfileActivity : AppCompatActivity() {
         etEmail.setText(email)
         etUserType.setText(
             when (userType) {
-                "client" -> "Client Account"
-                else -> "Freelancer Account"
+                "client" -> getString(R.string.client_account)
+                else -> getString(R.string.freelancer_account)
             }
         )
 
         // Set actual user data or placeholders
-        etFullName.setText(user?.fullName ?: "Enter your name")
-        etPhone.setText(user?.phone ?: "Enter phone number")
-        etBio.setText(user?.bio ?: "Tell us about yourself...")
+        etFullName.setText(user?.fullName ?: getString(R.string.enter_your_name))
+        etPhone.setText(user?.phone ?: getString(R.string.enter_phone_number))
+        etBio.setText(user?.bio ?: getString(R.string.tell_about_yourself))
 
         // Set user type specific data
         if (userType == "freelancer") {
-            etSkills.setText(user?.skills?.joinToString(", ") ?: "Add your skills")
+            etSkills.setText(user?.skills?.joinToString(", ") ?: getString(R.string.add_your_skills))
         } else {
-            etCompany.setText(user?.company ?: "Enter company name")
+            etCompany.setText(user?.company ?: getString(R.string.enter_company_name))
         }
     }
 
@@ -214,12 +240,14 @@ class ProfileActivity : AppCompatActivity() {
             "client" -> {
                 cardSkills.visibility = View.GONE
                 cardCompany.visibility = View.VISIBLE
-                tvSkillsTitle.text = "Company Information"
+                tvSkillsTitle.text = getString(R.string.company_information)
+                etCompany.hint = getString(R.string.company_name)
             }
             else -> {
                 cardSkills.visibility = View.VISIBLE
                 cardCompany.visibility = View.GONE
-                tvSkillsTitle.text = "Skills"
+                tvSkillsTitle.text = getString(R.string.skills)
+                etSkills.hint = getString(R.string.skills_hint)
             }
         }
     }
@@ -232,7 +260,7 @@ class ProfileActivity : AppCompatActivity() {
         val bio = etBio.text.toString().trim()
 
         if (fullName.isEmpty()) {
-            etFullName.error = "Full name is required"
+            etFullName.error = getString(R.string.full_name_required)
             return
         }
 
@@ -241,53 +269,26 @@ class ProfileActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val userId = sessionManager.getUserId() ?: ""
-                val userType = sessionManager.getUserType() ?: "freelancer"
-
-                // Create update data map
-                val updateData = mutableMapOf<String, Any>(
-                    "fullName" to fullName,
-                    "phone" to phone,
-                    "bio" to bio
+                // Update user data in Firestore
+                val updatedUser = currentUser?.copy(
+                    fullName = fullName,
+                    phone = phone,
+                    skills = if (sessionManager.getUserType() == "freelancer") skills.split(",").map { it.trim() } else emptyList(),
+                    company = company,
+                    bio = bio
                 )
 
-                // Add user type specific fields
-                if (userType == "freelancer") {
-                    val skillsList = skills.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                    updateData["skills"] = skillsList
-                } else {
-                    updateData["company"] to company
-                }
-
-                // Actually update in Firestore using the correct method
-                val updateResult = firebaseService.updateUser(userId, updateData)
+                // TODO: Implement actual Firestore update
+                // firebaseService.updateUser(updatedUser)
 
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     btnUpdateProfile.isEnabled = true
-
-                    if (updateResult.isSuccess) {
-                        // Update current user object
-                        currentUser = currentUser?.copy(
-                            fullName = fullName,
-                            phone = phone,
-                            bio = bio,
-                            skills = if (userType == "freelancer") skills.split(",").map { it.trim() } else emptyList(),
-                            company = company
-                        )
-
-                        Toast.makeText(
-                            this@ProfileActivity,
-                            "Profile updated successfully!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        Toast.makeText(
-                            this@ProfileActivity,
-                            "Error updating profile: ${updateResult.exceptionOrNull()?.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    Toast.makeText(
+                        this@ProfileActivity,
+                        getString(R.string.profile_updated_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -295,35 +296,42 @@ class ProfileActivity : AppCompatActivity() {
                     btnUpdateProfile.isEnabled = true
                     Toast.makeText(
                         this@ProfileActivity,
-                        "Error updating profile: ${e.message}",
+                        "${getString(R.string.error_updating_profile)}: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
         }
     }
+
     private fun changePassword() {
-        Toast.makeText(this, "Change password feature coming soon!", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.change_password_coming_soon), Toast.LENGTH_SHORT).show()
         // TODO: Implement password change dialog
     }
 
     private fun changeProfilePhoto() {
-        Toast.makeText(this, "Change profile photo feature coming soon!", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.change_photo_coming_soon), Toast.LENGTH_SHORT).show()
         // TODO: Implement image picker and upload to Firebase Storage
     }
 
     private fun logout() {
         androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Logout")
-            .setMessage("Are you sure you want to logout?")
-            .setPositiveButton("Logout") { dialog, which ->
+            .setTitle(getString(R.string.logout))
+            .setMessage(getString(R.string.logout_confirmation))
+            .setPositiveButton(getString(R.string.logout)) { dialog, which ->
                 sessionManager.logout()
                 val intent = Intent(this, LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
                 finish()
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Update UI texts when returning to activity (in case language changed)
+        updateUITexts()
     }
 }

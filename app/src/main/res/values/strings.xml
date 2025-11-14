@@ -1,5 +1,176 @@
+
 <resources>
-    <string name="app_name">Tholagig</string>
-    <string name="tholagig">TholaGig</string>
-    <string name="send">Send</string>
+<string name="default_web_client_id">731977982569-t5tfudlqjp47h3rorksenh9mj9fps3a6.apps.googleusercontent.com</string>
+
+<!-- App Basic Strings -->
+<string name="app_name">TholaGig</string>
+<string name="welcome">Welcome</string>
+<string name="find_your_next_gig">Find your next gig</string>
+<string name="loading">Loading...</string>
+<string name="error">Error</string>
+<string name="success">Success</string>
+<string name="cancel">Cancel</string>
+<string name="back">Back</string>
+
+<!-- Navigation -->
+<string name="home">Home</string>
+<string name="jobs">Jobs</string>
+<string name="applications">Applications</string>
+<string name="messages">Messages</string>
+<string name="profile">Profile</string>
+
+<!-- Job Related -->
+<string name="search_jobs">Search jobs</string>
+<string name="browse_jobs">Browse Jobs</string>
+<string name="my_applications">My Applications</string>
+
+<!-- Messaging -->
+<string name="start_conversation">Start a Conversation</string>
+<string name="type_message">Type a message...</string>
+<string name="send">Send</string>
+
+<!-- Authentication -->
+<string name="login">Login</string>
+<string name="register">Register</string>
+<string name="email">Email</string>
+<string name="password">Password</string>
+<string name="change_password">Change Password</string>
+
+<!-- Dashboard Strings -->
+<string name="welcome_user">Welcome, %s!</string>
+<string name="freelancer">Freelancer</string>
+<string name="quick_actions">Quick Actions</string>
+<string name="recommended_jobs">Recommended Jobs</string>
+<string name="applied_jobs">Applied Jobs</string>
+<string name="active_jobs">Active Jobs</string>
+<string name="total_earnings">Total Earnings</string>
+<string name="no_jobs_available">No jobs available at the moment</string>
+<string name="failed_to_load_jobs">Failed to load jobs</string>
+<string name="network_error">Network error</string>
+<string name="messages_feature_coming_soon">Messages feature coming soon!</string>
+
+<!-- Profile Section -->
+<string name="update_profile">Update Profile</string>
+<string name="logout">Logout</string>
+<string name="full_name">Full Name</string>
+<string name="phone">Phone</string>
+<string name="change_photo">Change Photo</string>
+<string name="account_type">Account Type</string>
+<string name="client_account">Client Account</string>
+<string name="freelancer_account">Freelancer Account</string>
+<string name="enter_your_name">Enter your name</string>
+<string name="enter_phone_number">Enter phone number</string>
+<string name="tell_about_yourself">Tell us about yourself</string>
+<string name="add_your_skills">Add your skills</string>
+<string name="enter_company_name">Enter company name</string>
+<string name="company_information">Company Information</string>
+<string name="company_name">Company Name</string>
+<string name="skills">Skills</string>
+<string name="skills_hint">Your skills (comma separated)</string>
+<string name="bio">Bio</string>
+
+<!-- Validation & Messages -->
+<string name="full_name_required">Full name is required</string>
+<string name="user_data_not_found">User data not found, please update your profile</string>
+<string name="error_loading_profile">Error loading profile</string>
+<string name="error_updating_profile">Error updating profile</string>
+<string name="profile_updated_success">Profile updated successfully!</string>
+<string name="change_password_coming_soon">Change password feature coming soon!</string>
+<string name="change_photo_coming_soon">Change profile photo feature coming soon!</string>
+<string name="logout_confirmation">Are you sure you want to logout?</string>
+
+<!-- Language Support -->
+<string name="change_language">Change Language</string>
+<string name="language_english">English</string>
+<string name="language_zulu">isiZulu</string>
+<string name="language_afrikaans">Afrikaans</string>
+<string name="select_language">Select Language</string>
+
+<!-- Job Browse Activity Specific Strings -->
+<string name="save_job">Save Job</string>
+<string name="search_jobs_hint">Search jobs by title, skills or category</string>
+<string name="remote">Remote</string>
+<string name="design">Design</string>
+<string name="development">Development</string>
+<string name="marketing">Marketing</string>
+<string name="sort">Sort</string>
+<string name="sort_newest">Sort: Newest</string>
+<string name="sort_highest_budget">Highest Budget</string>
+<string name="sort_lowest_budget">Lowest Budget</string>
+<string name="sort_deadline">Closest Deadline</string>
+<string name="filters">Filters</string>
+<string name="no_jobs_found">No jobs found</string>
+<string name="one_job_found">1 job found</string>
+<string name="jobs_found">jobs found</string>
+<string name="no_jobs_match_filters">No jobs match your filters</string>
+<string name="sort_by">Sort by</string>
+<string name="advanced_filters_coming_soon">Advanced filters coming soon!</string>
+<string name="save_feature_coming_soon">Save feature coming soon!</string>
+<!-- Login Activity Specific Strings -->
+
+<string name="welcome_back">Welcome Back</string>
+<string name="sign_in_to_continue">Sign in to continue</string>
+<string name="forgot_password">Forgot Password?</string>
+<string name="sign_in">SIGN IN</string>
+<string name="or_continue_with">OR CONTINUE WITH</string>
+<string name="dont_have_account">DON\'T HAVE AN ACCOUNT?</string>
+<string name="sign_up">SIGN UP</string>
+<string name="email_required">Email is required</string>
+<string name="valid_email_required">Valid email is required</string>
+<string name="password_required">Password is required</string>
+<string name="password_min_length">Password must be at least 6 characters</string>
+<string name="login_successful">Login successful!</string>
+<string name="account_not_setup">Account not properly set up. Please register again.</string>
+<string name="invalid_email_password">Invalid email or password</string>
+<string name="login_failed">Login failed</string>
+<string name="unknown_error">Unknown error</string>
+<string name="password_reset_coming_soon">Password reset feature coming soon</string>
+<string name="google_sign_in">Sign in with Google</string>
+<string name="facebook_sign_in">Sign in with Facebook</string>
+<!-- Filter Categories -->
+<string name="filter_remote_jobs">Filter remote jobs</string>
+<string name="filter_design_jobs">Filter design jobs</string>
+<string name="filter_development_jobs">Filter development jobs</string>
+<string name="filter_marketing_jobs">Filter marketing jobs</string>
+<!-- Job Creation Strings -->
+<string name="job_title">Job Title</string>
+<string name="job_description">Job Description</string>
+<string name="budget">Budget (R)</string>
+<string name="skills_required">Skills Required</string>
+<string name="location">Location</string>
+<string name="deadline">Deadline</string>
+<string name="job_details">Job Details</string>
+<string name="requirements">Requirements</string>
+<string name="job_title_required">Job title is required</string>
+<string name="job_description_required">Job description is required</string>
+<string name="valid_budget_required">Valid budget is required</string>
+<string name="job_created_success">Job created successfully!</string>
+<string name="error_creating_job">Error creating job</string>
+<!-- Client Specific Strings -->
+<string name="client">Client</string>
+<string name="manage_your_projects">Manage your projects</string>
+<string name="posted_jobs">Posted Jobs</string>
+<string name="total_spent">Total Spent</string>
+<string name="create_job">Create Job</string>
+<string name="my_jobs">My Jobs</string>
+<string name="recent_jobs">Recent Jobs</string>
+<string name="no_jobs_posted">No jobs posted yet</string>
+<string name="post_job">Post Job</string>
+<string name="manage_applications">Manage Applications</string>
+<string name="applications_management">Applications Management</string>
+
+<!-- Navigation for Client -->
+<string name="nav_create">Create</string>
+<string name="nav_my_jobs">My Jobs</string>
+
+<!-- Additional Common Strings -->
+<string name="loading_jobs">Loading jobs…</string>
+<string name="error_loading_jobs">Error loading jobs</string>
+
+    <string name="facebook_sso_coming_soon">Facebook SSO coming soon!</string>
+    <string name="unable_to_start_google_signin">Unable to start Google Sign-In</string>
+    <string name="welcome_message">Welcome %s!</string>
+    <string name="sign_in_cancelled">Sign-in cancelled</string>
+    <string name="sso_authentication_failed">SSO authentication failed</string>
+
 </resources>
