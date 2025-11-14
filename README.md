@@ -6,9 +6,11 @@
 
 ##  App Overview
 
-**Github Repository**: [https://github.com/peace05-star/Tholagig.git](https://github.com/peace05-star/Tholagig.git)  
-**School Repository**: [https://github.com/IIEMSA/opsc6312-poe-part-2-Peacesalomyphiri.git](https://github.com/IIEMSA/opsc6312-poe-part-2-Peacesalomyphiri.git)  
-**Demo Video**: [Vimeo Demo](https://vimeo.com/1125288731?share=copy)
+**Github Repository**: https://github.com/peace05-star/Tholagig.git (Personal)
+
+**School Repository**: https://github.com/IIEMSA/2025-nov-opsc6312-poe-part3-peace05-star.git (School)
+
+**Demo Video**: 
 
 ---
 
