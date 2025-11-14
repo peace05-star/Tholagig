@@ -1,6 +1,6 @@
 # TholaGig - Find Gigs. Earn Money. Build Your Future.
 
-![TholaGig Banner](https://via.placeholder.com/800x200/2E8B57/FFFFFF?text=TholaGig+-+Empowering+South+African+Freelancers)
+
 
 *Connecting Talent with Opportunity in South Africa - Formalizing the Informal Economy*
 
@@ -17,7 +17,7 @@
 ### The Problem We Solve
 South Africa has one of the largest informal labour markets in the world, with millions relying on "piece jobs" or "skropes" - temporary work that often lacks structure, visibility, and dignity. While global platforms like Fiverr exist, they don't address the unique needs of South African workers.
 
-![Informal Economy](https://via.placeholder.com/600x300/FF6B6B/FFFFFF?text=Bridging+the+Gap+in+Informal+Labor+Market)
+
 
 ### Our Mission
 TholaGig ("Thola" means "find" in isiZulu) formalizes the informal economy by providing a comprehensive freelance marketplace designed specifically for South African realities.
