@@ -10,7 +10,7 @@
 
 **School Repository**: https://github.com/IIEMSA/2025-nov-opsc6312-poe-part3-peace05-star.git (School)
 
-**Demo Video**: 
+**Demo Video**: https://vimeo.com/1137064394?share=copy&fl=sv&fe=ci
 
 ---
 
