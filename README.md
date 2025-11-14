@@ -1,125 +1,357 @@
 # TholaGig - Find Gigs. Earn Money. Build Your Future.
 
-*Connecting Talent with Opportunity in South Africa*
+![TholaGig Banner](https://via.placeholder.com/800x200/2E8B57/FFFFFF?text=TholaGig+-+Empowering+South+African+Freelancers)
 
-**Github Link**: https://github.com/peace05-star/Tholagig.git  **(Please Check this one)**
+*Connecting Talent with Opportunity in South Africa - Formalizing the Informal Economy*
 
-**(The school link has been giving issues, when I tried to push, it said repository not found.)**
+##  App Overview
 
+**Github Repository**: [https://github.com/peace05-star/Tholagig.git](https://github.com/peace05-star/Tholagig.git)  
+**School Repository**: [https://github.com/IIEMSA/opsc6312-poe-part-2-Peacesalomyphiri.git](https://github.com/IIEMSA/opsc6312-poe-part-2-Peacesalomyphiri.git)  
+**Demo Video**: [Vimeo Demo](https://vimeo.com/1125288731?share=copy)
 
-**School Github Link**: https://github.com/IIEMSA/opsc6312-poe-part-2-Peacesalomyphiri.git
+---
 
-**Vimeo Demo Video Link**: [https://youtu.be/6-ASEepyqAQ?feature=shared](https://vimeo.com/1125288731?share=copy)
+##  Purpose & Vision
 
-## Introduction
-South Africa has one of the largest informal labour markets in the world. Millions of people rely on "piece jobs" or as locals call them, skropes. These are temporary or once-off jobs that provide short-term income but often lack structure, visibility, and dignity.
-While global freelancing platforms like Fiverr and Freelancer exist, they are not widely known or relevant to the South African majority. They do not speak the language of the people or reflect the realities of working in townships, rural communities, or low-data environments.
-TholaGig fills this gap.
-"Thola" means find in isiZulu. TholaGig is a comprehensive freelance marketplace mobile application built for Android that connects businesses and individuals (clients) with skilled professionals (freelancers). Designed specifically for the South African market, the app facilitates project posting, talent discovery, application management, and seamless communication between parties.
-## Purpose of the App
-TholaGig is about formalizing the informal.
-It brings structure and dignity to the skrope economy. It helps workers track gigs, payments, and professional growth. It introduces freelancing as a career path, not just a survival strategy.
-## Vision for Growth:
--	**Now**: Empowering disadvantaged and low-skilled workers with tools to track and grow their work.
--	**Next**: Expanding to serve higher-skilled professionals such as developers, designers, and lawyers.
--	**Future**: Becoming a trusted South African freelancing ecosystem that levels the global playing field.
+### The Problem We Solve
+South Africa has one of the largest informal labour markets in the world, with millions relying on "piece jobs" or "skropes" - temporary work that often lacks structure, visibility, and dignity. While global platforms like Fiverr exist, they don't address the unique needs of South African workers.
 
-## The Problem
--	A large informal labour sector with little organization.
--	Lack of local, relatable platforms for gig workers.
--	High youth unemployment and need for flexible income opportunities.
--	Limited awareness of global freelancing platforms in South Africa.
+![Informal Economy](https://via.placeholder.com/600x300/FF6B6B/FFFFFF?text=Bridging+the+Gap+in+Informal+Labor+Market)
 
-## The Solution
-TholaGig provides:
--	Relatable branding (local language, culture, and context).
--	Accessibility with offline-first features and low-data optimization.
--	Empowerment by enabling users to showcase skills, track earnings, and build credibility.
--	Inclusivity through multi-language support (English + isiZulu) which will be done in the final part
+### Our Mission
+TholaGig ("Thola" means "find" in isiZulu) formalizes the informal economy by providing a comprehensive freelance marketplace designed specifically for South African realities.
 
-## Project Structure
- 
-## MVVM Pattern
+### Growth Vision
+- **Now**: Empowering disadvantaged workers with tools to track and grow their work
+- **Next**: Expanding to serve higher-skilled professionals
+- **Future**: Becoming South Africa's trusted freelancing ecosystem
+
+---
+
+##  Technical Architecture
+
+### System Design Overview
+```mermaid
+graph TB
+    A[UI Layer] --> B[ViewModel]
+    B --> C[Repository]
+    C --> D[Local Data - Room DB]
+    C --> E[Remote Data - Firebase]
+    C --> F[REST API]
+    D --> G[Offline Sync]
+    E --> H[Real-time Updates]
+    F --> I[Backend Services]
+```
+
+### MVVM Pattern Implementation
+```
 View (Activity/Fragment) → ViewModel → Repository → Data Sources
                                       ↓
-                              REST API + Firebase Services
-## Architecture Overview
-The TholaGig app follows modular architecture with a clean package organization that separates responsibilities by features such as authentication, dashboards, jobs, messaging, profiles, and networking.
-## Technical Implementation
-Authentication and user management are handled via Firebase Authentication, providing secure login and registration flows with role-based access (Client/Freelancer). Job management, messaging, and profile handling are built with a combination of Firebase and REST APIs using Retrofit. MVVM architecture ensures a clear separation of concerns between the UI, business logic, and data sources.
-## Technology Stack
--	Firebase Authentication
--	Firebase Firestore
--	Retrofit 2 + Gson Converter
--	Android Jetpack Components (ViewModel, LiveData)
--	RecyclerView + Material Components
+                Local DB + Firebase + REST API Services
+```
 
-## Data Flow Architecture
--	MVVM Pattern Implementation:
--	View (Activity/Fragment) → ViewModel → Repository → Data Sources
--	Data Sources include both local (Firebase/Room) and remote (REST API) components.
+### Package Structure
+```
+app/
+├──  auth/                    # Authentication & SSO
+├── dashboards/             # Client & Freelancer Dashboards
+├──  jobs/                   # Job Management
+├──  messaging/              # Real-time Chat
+├──  profiles/               # User Profiles
+├──  network/               # API & Firebase Services
+├──  data/                  # Local Storage & Repositories
+├──  notifications/         # Push Notifications
+├──  language/             # Multi-language Support
+└──  sync/                 # Offline Synchronization
+```
 
-## Key Features
--	Authentication and Role Management
--	Job Creation and Browsing
--	 Application System for Freelancers
--	 Messaging System
--	 Profile Management
--	 REST API and Firebase Integration
+---
 
-## Security & Session Management
-SessionManager.kt manages authentication tokens, login persistence, and session clearing. All network communication is secured using HTTPS, and Firebase handles authentication with encrypted credentials.
-## Getting Started
-1.	Clone the repository
-2.	 Add google-services.json to the app directory
-3.	Configure API base URL in ApiClient.kt
-4.	Build and run the application in Android Studio
-## GitHub Repository
-Current Status
--	Branches: 3 active branches
--	Commits: 33 commits
--	Latest Update: REST API integration for ClientProfileActivity
-  
-  Recent Development
--	Implemented: REST API integration using Retrofit for client profiles
--	Enhanced: ClientProfileActivity with API data binding
-  
-  In Progress
-- Expanded API integration for other features
-## Contributing Guidelines
-We welcome contributions from the developer community!
-## Development Process
-1.	Fork the repository
-2.	Create a feature branch: git checkout -b feature/your-feature
-3.	Commit changes: Use conventional commit messages
-4.	Push and open Pull Request
-## Branch Naming
-- feature/ - New features
-## Project Status
-Current Version
-## Phase 2 - Core Implementation
-## Completed Features
--	Firebase Authentication system
--	REST API integration with Retrofit
--	Client and freelancer profiles
--	Job posting and browsing
--	Basic messaging system
-## In Development
--	Enhanced job application flow
--	Real-time notifications
--	Payment integration setup
--	Advanced search and filtering
-## Phase 3 Roadmap
--	Offline functionality with Room DB
--	QR code networking
--	Gamification system
--	Advanced analytics
-## License
-This project is licensed under Tholagig’s Developers.
-## Development Team
--	Ndumiso Magwanya - Project Lead & Backend Development
--	Peace Salomy Phiri - UI/UX Design & Frontend Development
--	Sinazo Happy Mgidi - API Development & Integration
--	Sindiswa Nomakholwa Madliwa - Mobile Development & Architecture
+##  Technology Stack
+
+### Core Technologies
+| Category | Technologies |
+|----------|--------------|
+| **Mobile Framework** | Android Native (Kotlin) |
+| **Architecture** | MVVM, Repository Pattern |
+| **Local Database** | Room DB with SQLite |
+| **Backend Services** | Firebase Auth, Firestore, Cloud Messaging |
+| **Networking** | Retrofit 2, Gson Converter |
+| **UI Components** | Material Design 3, Jetpack Compose |
+
+### Key Dependencies
+```kotlin
+// Architecture Components
+implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+implementation("androidx.room:room-runtime:2.6.0")
+
+// Firebase
+implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+implementation("com.google.firebase:firebase-auth-ktx")
+implementation("com.google.firebase:firebase-messaging-ktx")
+
+// Networking
+implementation("com.squareup.retrofit2:retrofit:2.9.0")
+implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+// SSO Integration
+implementation("com.google.android.gms:play-services-auth:20.7.0")
+```
+
+---
+
+##  Innovative Features Implementation
+
+### 1. Single Sign-On (SSO) Integration
+![SSO Architecture](https://via.placeholder.com/600x200/4ECDC4/FFFFFF?text=Secure+SSO+with+Google+Sign-In)
+
+**Implementation Details:**
+- **Multi-provider SSO** support (Google, extensible to others)
+- **Seamless authentication** with Firebase backend
+- **Secure token management** and automatic session handling
+- **Profile synchronization** across devices
+
+**Key Components:**
+- `SSOService.kt` - Central SSO management
+- Enhanced `LoginActivity.kt` with SSO options
+- Secure credential handling with OAuth 2.0
+
+### 2. Offline-First with Smart Synchronization
+![Offline Architecture](https://via.placeholder.com/600x200/45B7D1/FFFFFF?text=Offline-First+with+Smart+Sync)
+
+**Capabilities:**
+-  **Browse gigs** without internet connection
+-  **Create job posts** that queue for later submission
+-  **Manage profiles** and portfolios offline
+-  **Chat message queuing** with delivery status
+-  **Automatic conflict resolution** when back online
+
+**Technical Implementation:**
+- **Room DB** with entities for users, gigs, messages
+- **Repository pattern** with dual data sources (local/remote)
+- **WorkManager** for background synchronization
+- **Conflict detection** and resolution strategies
+
+### 3. Real-time Push Notification System
+![Notifications](https://via.placeholder.com/600x200/FFA07A/FFFFFF?text=Real-time+Push+Notifications)
+
+**Notification Types:**
+-  **New gig matches** and recommendations
+-  **Instant messaging** notifications
+-  **Project updates** and milestones
+-  **System announcements** and updates
+
+**Features:**
+- **Priority-based** delivery system
+- **Deep linking** to relevant app sections
+- **Battery-efficient** background processing
+- **Customizable** notification preferences
+
+### 4. Multi-language Support
+![Language Support](https://via.placeholder.com/600x200/F7DC6F/FFFFFF?text=Multi-language+Support+%7C+English+%2B+isiZulu)
+
+**Supported Languages:**
+- **🇬🇧 English** - Primary language
+- **🇿🇦 isiZulu** - South African official language
+- **🇿🇦 Afrikaans** - Widely spoken SA language
+
+**Implementation:**
+- Android resource qualifiers for different locales
+- Runtime language switching without app restart
+- Cultural context-aware translations
+- RTL (Right-to-Left) layout support
+
+---
+
+##  GitHub & Development Workflow
+
+### Repository Structure
+```
+Tholagig/
+├──  app/                   # Main application module
+├──  gradle/               # Build configuration
+├──  build.gradle.kts      # Project build configuration
+├──  settings.gradle.kts   # Project settings
+├──  .github/              # GitHub Actions workflows
+└──  README.md            # Project documentation
+```
+
+### GitHub Actions CI/CD Pipeline
+
+```yaml
+name: Android CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        
+    - name: Build with Gradle
+      run: ./gradlew build
+      
+    - name: Run tests
+      run: ./gradlew test
+```
+
+### Branch Strategy
+- `main` - Production-ready code
+- `develop` - Development integration
+- `feature/*` - New features
+- `hotfix/*` - Critical bug fixes
+- `release/*` - Release preparation
+
+### Development Process
+1. **Fork & Clone** the repository
+2. **Create feature branch**: `git checkout -b feature/innovative-feature`
+3. **Implement changes** with comprehensive testing
+4. **Commit using conventional messages**:
+   ```bash
+   git commit -m "feat: add SSO authentication service"
+   git commit -m "fix: resolve offline sync conflicts"
+   ```
+5. **Push and create Pull Request** with detailed description
+
+---
+
+##  Release Notes
+
+###  Version 2.0 - "Innovation Release"
+*Latest Major Update - Integrating Advanced Features*
+
+#### New Features Added:
+1. **🔐 Single Sign-On (SSO) Integration**
+   - Google Sign-In implementation
+   - Secure Firebase authentication backend
+   - Automatic user profile synchronization
+   - Extensible architecture for additional providers
+
+2. **Offline-First Architecture**
+   - Room Database implementation for local storage
+   - Background synchronization with WorkManager
+   - Conflict resolution for data consistency
+   - Queue system for offline actions
+
+3. **Real-time Push Notifications**
+   - Firebase Cloud Messaging integration
+   - Custom notification types and priorities
+   - In-app notification center
+   - Battery-efficient delivery system
+
+4. **Multi-language Support**
+   - isiZulu language implementation
+   - Afrikaans language support
+   - Runtime language switching
+   - Cultural context-aware translations
+
+#### Technical Improvements:
+- **Enhanced Security**: OAuth 2.0 implementation
+- **Performance**: Optimized data synchronization
+- **User Experience**: Seamless online/offline transitions
+- **Accessibility**: RTL layout support and improved navigation
+
+#### Bug Fixes:
+- Resolved authentication token expiration issues
+- Fixed offline data synchronization conflicts
+- Improved notification delivery reliability
+- Enhanced error handling and user feedback
+
+---
+
+##  Getting Started
+
+### Prerequisites
+- Android Studio Arctic Fox or later
+- JDK 11 or higher
+- Firebase project configuration
+- Google Cloud Console setup for SSO
+
+### Installation Steps
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/peace05-star/Tholagig.git
+   cd Tholagig
+   ```
+
+2. **Firebase Configuration**
+   - Create Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+   - Add Android app with your package name
+   - Download `google-services.json` to `app/` directory
+
+3. **SSO Setup**
+   - Configure OAuth credentials in Google Cloud Console
+   - Add SHA-1 fingerprint to Firebase project
+
+4. **Build and Run**
+   ```bash
+   ./gradlew build
+   ```
+
+### Configuration
+Update `app/src/main/res/values/strings.xml`:
+```xml
+<string name="default_web_client_id">YOUR_GOOGLE_WEB_CLIENT_ID</string>
+```
+
+---
+
+##  Development Team
+
+| Role | Team Member | Focus Areas |
+|------|-------------|-------------|
+| **Project Lead & Backend** | Ndumiso Magwanya | System Architecture, API Design |
+| **UI/UX Design & Frontend** | Peace Salomy Phiri | User Experience, Interface Design |
+| **API Development** | Sinazo Happy Mgidi | REST API, Integration |
+| **Mobile Architecture** | Sindiswa Nomakhalwa Madliwa | Android Development, Database |
+
+---
+
+##  Project Status
+
+### Current Version: 2.0 - Innovation Release
+** Completed Features:**
+- [x] Firebase Authentication with SSO
+- [x] Offline-first architecture with Room DB
+- [x] Real-time push notifications
+- [x] Multi-language support (English + isiZulu)
+- [x] Job posting and browsing system
+- [x] Messaging and communication platform
+
+** In Development:**
+- [ ] Advanced payment integration
+- [ ] Gamification system for user engagement
+- [ ] Advanced analytics and insights
+- [ ] QR code networking features
+
+** Future Roadmap:**
+- Additional SSO providers (Facebook, Apple)
+- Advanced offline conflict resolution
+- Voice-based navigation
+- More South African languages
+- Advanced search and recommendation engine
+
+---
+
+
+## Support & Community
+
+- **  Bug Reports**: [GitHub Issues](https://github.com/peace05-star/Tholagig/issues)
+- ** Community Forum**: Discord Channel (Coming Soon)
+- ** Documentation**: [Wiki Pages](https://github.com/peace05-star/Tholagig/wiki)
+
+---
+
 
 
