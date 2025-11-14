@@ -7,9 +7,18 @@ import student.projects.tholagig.models.Job
 import student.projects.tholagig.models.OfflineJob
 
 class JobRepository(private val database: AppDatabase) {
-    private val jobDao = database.jobDao()
-    // Remove API service for now - we'll add it back later
-    // private val apiService = ApiClient.getService()
+
+    private val jobDao = database.JobDao()
+
+    suspend fun createJob(job: Job) {
+        val offlineJob = OfflineJob.fromJob(job)
+        jobDao.insertJob(offlineJob)
+    }
+
+    suspend fun createJobs(jobs: List<Job>) {
+        val offlineJobs = jobs.map { OfflineJob.fromJob(it) }
+        jobDao.insertAllJobs(offlineJobs)
+    }
 
     fun getAllJobs(): Flow<List<Job>> {
         return jobDao.getAllJobs().map { offlineJobs ->
@@ -17,39 +26,15 @@ class JobRepository(private val database: AppDatabase) {
         }
     }
 
-    suspend fun syncJobsWithApi() {
-        try {
-            // Temporarily comment out API call
-            // val jobs = apiService.getJobs()
-            // val offlineJobs = jobs.map { job ->
-            //     OfflineJob.fromJob(job)
-            // }
-            // jobDao.insertAllJobs(offlineJobs)
-        } catch (e: Exception) {
-            // API call failed, we'll use local data
-        }
-    }
-
-    suspend fun createJob(job: Job): Boolean {
-        return try {
-            // Save locally first
-            val offlineJob = OfflineJob.fromJob(job).copy(isSynced = false)
-            jobDao.insertJob(offlineJob)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
     suspend fun getJobById(jobId: String): Job? {
         return jobDao.getJobById(jobId)?.toJob()
     }
 
-    suspend fun getUnsyncedJobs(): List<Job> {
-        return jobDao.getUnsyncedJobs().map { it.toJob() }
+    suspend fun deleteJob(jobId: String) {
+        jobDao.deleteJob(jobId)
     }
 
-    suspend fun markJobAsSynced(jobId: String) {
-        jobDao.markJobAsSynced(jobId)
+    suspend fun clearAllJobs() {
+        jobDao.deleteAllJobs()
     }
 }

@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.*
 import student.projects.tholagig.R
@@ -20,6 +21,9 @@ import student.projects.tholagig.jobs.CreateJobActivity
 import student.projects.tholagig.jobs.MyJobsActivity
 import student.projects.tholagig.jobs.ApplicationsManagementActivity
 import student.projects.tholagig.jobs.JobDetailsActivity
+import student.projects.tholagig.messaging.ConversationsActivity
+import student.projects.tholagig.messaging.MessagesActivity
+import student.projects.tholagig.models.Conversation
 import student.projects.tholagig.models.Job
 import student.projects.tholagig.models.JobApplication
 import student.projects.tholagig.network.FirebaseService
@@ -42,9 +46,13 @@ class ClientDashboardActivity : AppCompatActivity() {
     private lateinit var fabCreateJob: FloatingActionButton
     private lateinit var progressBar: ProgressBar
 
+    private lateinit var bottomNavigation: BottomNavigationView
+
     private lateinit var recentJobsAdapter: RecentJobsAdapter
 
     private lateinit var btnProfile: ImageButton
+
+    private lateinit var btnNotifications: ImageButton
     private val recentJobs = mutableListOf<Job>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,7 +65,13 @@ class ClientDashboardActivity : AppCompatActivity() {
         initializeViews()
         setupRecyclerView()
         setupClickListeners()
+        setupBottomNavigation()
+        // Test if UI components work
+        testStatsUI()
+
+        // Load real data
         loadDashboardData()
+
     }
 
     private fun initializeViews() {
@@ -70,7 +84,70 @@ class ClientDashboardActivity : AppCompatActivity() {
         fabCreateJob = findViewById(R.id.fabCreateJob)
         progressBar = findViewById(R.id.progressBar)
         btnProfile = findViewById(R.id.btnProfile)
+        btnNotifications = findViewById(R.id.btnNotifications)
+        bottomNavigation = findViewById(R.id.bottom_navigation)
+
+        Log.d("ClientDashboard", "✅ Views initialized")
     }
+
+    private fun setupBottomNavigation() {
+        bottomNavigation.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_dashboard -> {
+                    // If already on dashboard, just refresh, otherwise navigate
+                    if (!isOnDashboard) {
+                        val intent = Intent(this, ClientDashboardActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        startActivity(intent)
+                    } else {
+                        loadDashboardData() // Refresh if already on dashboard
+                    }
+                    true
+                }
+                R.id.nav_jobs -> {
+                    startActivity(Intent(this, MyJobsActivity::class.java))
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    true
+                }
+                R.id.nav_applications -> {
+                    startActivity(Intent(this, ApplicationsManagementActivity::class.java))
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    true
+                }
+                R.id.nav_messages -> {
+                    openMessages()
+                    true
+                }
+                R.id.nav_profile -> {
+                    startActivity(Intent(this, ClientProfileActivity::class.java))
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    true
+                }
+                else -> false
+            }
+        }
+
+        // Set dashboard as selected
+        bottomNavigation.selectedItemId = R.id.nav_dashboard
+        Log.d("ClientDashboard", "✅ Bottom navigation setup")
+    }
+
+    // Add this property to track current screen
+    private var isOnDashboard: Boolean = true
+
+    override fun onResume() {
+        super.onResume()
+        isOnDashboard = true
+        bottomNavigation.selectedItemId = R.id.nav_dashboard
+        Log.d("ClientDashboard", "🔄 onResume: Refreshing dashboard data")
+        loadDashboardData()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isOnDashboard = false
+    }
+
 
     private fun setupRecyclerView() {
         recentJobsAdapter = RecentJobsAdapter(recentJobs) { job ->
@@ -78,14 +155,17 @@ class ClientDashboardActivity : AppCompatActivity() {
         }
         rvRecentJobs.layoutManager = LinearLayoutManager(this)
         rvRecentJobs.adapter = recentJobsAdapter
+        Log.d("ClientDashboard", "✅ RecyclerView setup")
     }
 
     private fun setupClickListeners() {
+        btnProfile.setOnClickListener {
+            startActivity(Intent(this, ClientProfileActivity::class.java))
+        }
 
-            btnProfile.setOnClickListener {
-                val intent = Intent(this, ClientProfileActivity::class.java)
-                startActivity(intent)
-            }
+        btnNotifications.setOnClickListener {
+            openNotifications()
+        }
 
         findViewById<CardView>(R.id.cardActiveJobs).setOnClickListener {
             startActivity(Intent(this, MyJobsActivity::class.java))
@@ -106,6 +186,30 @@ class ClientDashboardActivity : AppCompatActivity() {
         fabCreateJob.setOnClickListener {
             startActivity(Intent(this, CreateJobActivity::class.java))
         }
+
+        Log.d("ClientDashboard", "✅ Click listeners setup")
+    }
+
+    private fun openMessages() {
+        val intent = Intent(this, ConversationsActivity::class.java).apply {
+            putExtra("USER_TYPE", "client")
+        }
+        startActivity(intent)
+    }
+
+    private fun openNotifications() {
+        // Show notifications dialog or navigate to notifications activity
+        Toast.makeText(this, "Notifications feature coming soon!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun testStatsUI() {
+        // Temporary test to see if UI components work
+        tvActiveJobs.text = "5"
+        tvTotalApplications.text = "12"
+        tvHiredFreelancers.text = "3"
+        tvSpentAmount.text = "R 8,500"
+
+        Log.d("ClientDashboard", "🔄 TEST: Stats UI should show: 5 active, 12 applications, 3 hired, R 8,500 spent")
     }
 
     private fun loadDashboardData() {
@@ -118,65 +222,114 @@ class ClientDashboardActivity : AppCompatActivity() {
             return
         }
 
+        Log.d("ClientDashboard", "🟡 STARTING DASHBOARD DATA LOAD for client: $clientId")
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                Log.d("ClientDashboard", "📥 STEP 1: Loading user data...")
                 val userResult = firebaseService.getUserById(clientId)
+
+                Log.d("ClientDashboard", "📥 STEP 2: Loading all jobs...")
                 val jobsResult = firebaseService.getJobs()
+
+                Log.d("ClientDashboard", "📥 STEP 3: Loading applications...")
                 val applicationsResult = firebaseService.getApplicationsByClient(clientId)
 
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
 
+                    // Handle user data
                     if (userResult.isSuccess) {
                         val user = userResult.getOrNull()
                         tvWelcome.text = "Welcome, ${user?.fullName ?: "Client"}!"
+                        Log.d("ClientDashboard", "✅ STEP 1 COMPLETE: User data loaded: ${user?.fullName}")
                     }
 
+                    // Handle jobs data
                     if (jobsResult.isSuccess) {
                         val allJobs = jobsResult.getOrNull() ?: emptyList()
                         val clientJobs = allJobs.filter { it.clientId == clientId }
                         updateJobsData(clientJobs)
 
+                        // Handle applications data
                         if (applicationsResult.isSuccess) {
                             val applications = applicationsResult.getOrNull() ?: emptyList()
                             updateStats(clientJobs, applications)
+                        } else {
+                            updateStats(clientJobs, emptyList())
                         }
                     }
+
+                    Log.d("ClientDashboard", "🏁 DASHBOARD LOAD COMPLETE")
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
+                    Log.e("ClientDashboard", "💥 ERROR loading dashboard: ${e.message}", e)
                     Toast.makeText(this@ClientDashboardActivity, "Error loading dashboard: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
-
     private fun updateJobsData(jobs: List<Job>) {
+        Log.d("ClientDashboard", "🔄 Updating jobs list with ${jobs.size} jobs")
         recentJobs.clear()
         recentJobs.addAll(jobs)
         recentJobsAdapter.notifyDataSetChanged()
-        Log.d("ClientDashboard", "Loaded ${recentJobs.size} jobs into the list")
+        Log.d("ClientDashboard", "✅ Jobs list updated: ${recentJobs.size} jobs in RecyclerView")
     }
 
     private fun updateStats(jobs: List<Job>, applications: List<JobApplication>) {
+        Log.d("ClientDashboard", "📊 STARTING STATS CALCULATION...")
+        Log.d("ClientDashboard", "   Jobs count: ${jobs.size}, Applications count: ${applications.size}")
+
+        // Calculate active jobs
         val activeJobs = jobs.count { it.status.equals("open", ignoreCase = true) }
+        Log.d("ClientDashboard", "   Active jobs: $activeJobs out of ${jobs.size} total jobs")
 
-        Log.d("ClientDashboard", "Active jobs: $activeJobs out of ${jobs.size} total jobs")
+        // Calculate total applications
+        val totalApplications = applications.size
+        Log.d("ClientDashboard", "   Total applications: $totalApplications")
 
+        // Calculate hired freelancers
+        val hiredFreelancers = applications.count {
+            it.status.equals("accepted", ignoreCase = true) ||
+                    it.status.equals("hired", ignoreCase = true)
+        }
+        Log.d("ClientDashboard", "   Hired freelancers: $hiredFreelancers")
+
+        // Calculate total spent
+        val acceptedApplications = applications.filter {
+            it.status.equals("accepted", ignoreCase = true) ||
+                    it.status.equals("hired", ignoreCase = true)
+        }
+
+        Log.d("ClientDashboard", "   Accepted applications for spending: ${acceptedApplications.size}")
+
+        // DEBUG: Log each accepted application
+        acceptedApplications.forEachIndexed { index, app ->
+            Log.d("ClientDashboard", "   💰 Accepted App ${index + 1}: '${app.jobTitle}' - R${app.proposedBudget}")
+        }
+
+        val totalSpent = acceptedApplications.sumOf { it.proposedBudget }
+        Log.d("ClientDashboard", "   Total spent: R$totalSpent")
+
+        // Update UI
+        Log.d("ClientDashboard", "🔄 Updating UI with stats...")
         tvActiveJobs.text = activeJobs.toString()
-        tvTotalApplications.text = applications.size.toString()
-        tvHiredFreelancers.text = applications.count { it.status.equals("accepted", ignoreCase = true) }.toString()
-
-        val totalSpent = applications
-            .filter { it.status.equals("accepted", ignoreCase = true) }
-            .sumOf { it.proposedBudget }
+        tvTotalApplications.text = totalApplications.toString()
+        tvHiredFreelancers.text = hiredFreelancers.toString()
 
         val format = NumberFormat.getCurrencyInstance().apply {
             maximumFractionDigits = 0
             currency = Currency.getInstance("ZAR")
         }
         tvSpentAmount.text = format.format(totalSpent)
+
+        Log.d("ClientDashboard", "✅ STATS UPDATED: $activeJobs active, $totalApplications applications, $hiredFreelancers hired, R$totalSpent spent")
+
+        // Check if UI is actually updating
+        Log.d("ClientDashboard", "📱 UI SHOULD SHOW: Active=$activeJobs, Applications=$totalApplications, Hired=$hiredFreelancers, Spent=${format.format(totalSpent)}")
     }
 
     private fun openJobDetails(job: Job) {
@@ -461,8 +614,4 @@ class ClientDashboardActivity : AppCompatActivity() {
         finish()
     }
 
-    override fun onResume() {
-        super.onResume()
-        loadDashboardData()
-    }
 }

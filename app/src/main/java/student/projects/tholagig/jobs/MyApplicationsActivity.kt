@@ -25,6 +25,7 @@ import student.projects.tholagig.network.SessionManager
 import java.util.Date
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import student.projects.tholagig.dashboards.FreelancerDashboardActivity
+import student.projects.tholagig.messaging.ConversationsActivity
 import student.projects.tholagig.messaging.MessagesActivity
 import student.projects.tholagig.profile.ProfileActivity
 
@@ -101,7 +102,7 @@ class MyApplicationsActivity : AppCompatActivity() {
                         true
                     }
                     R.id.nav_messages -> {
-                        startActivity(Intent(this, MessagesActivity::class.java))
+                        startActivity(Intent(this, ConversationsActivity::class.java))
                         finish()
                         true
                     }

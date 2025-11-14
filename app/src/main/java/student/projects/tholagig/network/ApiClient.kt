@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
     // Use a free testing API - replace with your actual API URL later
-    private const val BASE_URL = "http://localhost:3000/api/"
+    private const val BASE_URL = "https://jsonplaceholder.typicode.com/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

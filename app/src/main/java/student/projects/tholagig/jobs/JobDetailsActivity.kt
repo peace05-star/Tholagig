@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
@@ -16,6 +17,7 @@ import kotlinx.coroutines.tasks.await
 import student.projects.tholagig.R
 import student.projects.tholagig.Adapters.JobsAdapter
 import student.projects.tholagig.dialogs.ApplicationFormDialog
+import student.projects.tholagig.messaging.MessagesActivity
 import student.projects.tholagig.models.Job
 import student.projects.tholagig.models.JobApplication
 import student.projects.tholagig.network.FirebaseService
@@ -44,6 +46,8 @@ class JobDetailsActivity : AppCompatActivity() {
     private lateinit var tvPostedDate: TextView
     private lateinit var tvExperienceLevel: TextView
 
+    private lateinit var btnMessageClient: Button
+
     private lateinit var sessionManager: SessionManager
     private lateinit var firebaseService: FirebaseService
     private lateinit var similarJobsAdapter: JobsAdapter
@@ -66,7 +70,6 @@ class JobDetailsActivity : AppCompatActivity() {
         loadJobDetails()
         checkApplicationStatus()
         checkIfJobSaved()
-        checkIfJobOwner()
     }
 
     private fun initializeViews() {
@@ -88,6 +91,7 @@ class JobDetailsActivity : AppCompatActivity() {
         tvSimilarJobsTitle = findViewById(R.id.tvSimilarJobsTitle)
         tvPostedDate = findViewById(R.id.tvPostedDate)
         tvExperienceLevel = findViewById(R.id.tvExperienceLevel)
+        btnMessageClient = findViewById(R.id.btnMessageClient)
     }
 
     private fun setupRecyclerView() {
@@ -118,9 +122,29 @@ class JobDetailsActivity : AppCompatActivity() {
         }
 
         // Initialize back button
-        findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
+        findViewById<ImageButton>(R.id.btnBack)?.setOnClickListener {
             onBackPressed()
         }
+
+        btnMessageClient.setOnClickListener {
+            messageClient()
+        }
+
+        updateSaveButtonUI()
+    }
+
+    private fun updateSaveButtonUI() {
+        val saveIcon = if (isSaved) {
+            R.drawable.ic_bookmark_filled
+        } else {
+            R.drawable.ic_bookmark_border
+        }
+        btnSave.setImageResource(saveIcon)
+
+        // Update save button color using ContextCompat for API compatibility
+        btnSave.setColorFilter(
+            ContextCompat.getColor(this, if (isSaved) R.color.orange else R.color.gray)
+        )
     }
 
     private fun loadJobDetails() {
@@ -205,7 +229,7 @@ class JobDetailsActivity : AppCompatActivity() {
             val chip = Chip(this).apply {
                 text = skill
                 setChipBackgroundColorResource(R.color.light_gray)
-                setTextColor(resources.getColor(R.color.black))
+                setTextColor(ContextCompat.getColor(this@JobDetailsActivity, R.color.black))
                 isClickable = false
                 setPadding(32, 16, 32, 16)
             }
@@ -269,10 +293,13 @@ class JobDetailsActivity : AppCompatActivity() {
         val currentUserId = sessionManager.getUserId() ?: ""
         val jobClientId = currentJob?.clientId ?: ""
 
-        // If current user is the job owner, hide the apply button
+        // If current user is the job owner, hide the apply and message buttons
         if (currentUserId == jobClientId) {
             btnApply.visibility = View.GONE
+            btnMessageClient.visibility = View.GONE
             Toast.makeText(this, "This is your job posting", Toast.LENGTH_SHORT).show()
+        } else {
+            btnMessageClient.visibility = View.VISIBLE
         }
     }
 
@@ -490,6 +517,7 @@ class JobDetailsActivity : AppCompatActivity() {
                     if (result.isSuccess) {
                         isSaved = !isSaved
                         updateUIState()
+                        updateSaveButtonUI()
                         val message = if (isSaved) "Job saved to favorites!" else "Job removed from favorites"
                         Toast.makeText(this@JobDetailsActivity, message, Toast.LENGTH_SHORT).show()
                     } else {
@@ -508,25 +536,46 @@ class JobDetailsActivity : AppCompatActivity() {
         // Update apply button
         if (hasApplied) {
             btnApply.text = "Applied ✓"
-            btnApply.setBackgroundColor(resources.getColor(R.color.green))
+            btnApply.setBackgroundColor(ContextCompat.getColor(this, R.color.green))
             btnApply.isEnabled = false
+
+            // Show message button more prominently after applying
+            btnMessageClient.setBackgroundColor(ContextCompat.getColor(this, R.color.blue))
+            btnMessageClient.text = "Message Client 💬"
         } else {
             btnApply.text = "Apply for Job"
-            btnApply.setBackgroundColor(resources.getColor(R.color.orange))
+            btnApply.setBackgroundColor(ContextCompat.getColor(this, R.color.orange))
             btnApply.isEnabled = true
+
+            btnMessageClient.setBackgroundColor(ContextCompat.getColor(this, R.color.blue))
+            btnMessageClient.text = "Message Client"
         }
 
-        // Update save button
-        val saveIcon = if (isSaved) {
-            R.drawable.ic_bookmark_filled
-        } else {
-            R.drawable.ic_bookmark_border
-        }
-        btnSave.setImageResource(saveIcon)
+        updateSaveButtonUI()
+    }
 
-        // Update save button color
-        btnSave.setColorFilter(
-            resources.getColor(if (isSaved) R.color.orange else R.color.gray)
-        )
+    private fun messageClient() {
+        val currentJob = currentJob ?: return
+        val currentUserId = sessionManager.getUserId() ?: ""
+
+        // Check if user is logged in
+        if (currentUserId.isEmpty()) {
+            Toast.makeText(this, "Please login to message clients", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Check if user is trying to message themselves
+        if (currentUserId == currentJob.clientId) {
+            Toast.makeText(this, "This is your own job posting", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Log.d("JobDetails", "📨 Messaging client: ${currentJob.clientName} (ID: ${currentJob.clientId})")
+
+        val intent = Intent(this, MessagesActivity::class.java).apply {
+            putExtra("RECEIVER_ID", currentJob.clientId)
+            putExtra("RECEIVER_NAME", currentJob.clientName ?: "Job Client")
+        }
+        startActivity(intent)
     }
 }

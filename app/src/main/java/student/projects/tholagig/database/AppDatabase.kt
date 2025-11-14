@@ -3,6 +3,7 @@ package student.projects.tholagig.database
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import android.content.Context
 import student.projects.tholagig.models.OfflineJob
 import student.projects.tholagig.models.OfflineApplication
@@ -13,10 +14,11 @@ import student.projects.tholagig.models.OfflineMessage
     version = 1,
     exportSchema = false
 )
+@TypeConverters(Converters::class) // ADD THIS LINE
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun jobDao(): JobDao
-    abstract fun applicationDao(): ApplicationDao
-    abstract fun messageDao(): MessageDao
+    abstract fun JobDao(): JobDao
+    abstract fun ApplicationDao(): ApplicationDao
+    abstract fun MessageDao(): MessageDao
 
     companion object {
         @Volatile

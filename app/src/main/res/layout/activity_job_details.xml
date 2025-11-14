@@ -317,22 +317,43 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:minHeight="200dp" />
+            </LinearLayout>
+
+            <!-- Apply and Message Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="32dp"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/btnApply"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:backgroundTint="@color/orange"
+                    android:text="Apply for Job"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnMessageClient"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/blue"
+                    android:text="Message Client"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
-            <!-- Apply Button -->
-            <Button
-                android:id="@+id/btnApply"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="32dp"
-                android:backgroundTint="@color/orange"
-                android:text="Apply for Job"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-        </LinearLayout>
+        </LinearLayout> <!-- This closes the main LinearLayout inside ScrollView -->
     </ScrollView>
 
     <!-- Progress Bar - Centered Overlay -->

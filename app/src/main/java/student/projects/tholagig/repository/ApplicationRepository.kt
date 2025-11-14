@@ -7,7 +7,7 @@ import student.projects.tholagig.models.JobApplication
 import student.projects.tholagig.models.OfflineApplication
 
 class ApplicationRepository(private val database: AppDatabase) {
-    private val applicationDao = database.applicationDao()
+    private val applicationDao = database.ApplicationDao()
 
     fun getApplicationsByFreelancer(freelancerId: String): Flow<List<JobApplication>> {
         return applicationDao.getApplicationsByFreelancer(freelancerId).map { offlineApps ->

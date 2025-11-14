@@ -3,7 +3,6 @@ package student.projects.tholagig.models
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Index
-import java.util.Date
 
 @Entity(
     tableName = "offline_messages",
@@ -20,3 +19,4 @@ data class OfflineMessage(
     val isRead: Boolean = false,
     val isSynced: Boolean = false
 )
+// No TypeConverter needed here since you're using Long for timestamp

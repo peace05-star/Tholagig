@@ -17,6 +17,7 @@ import student.projects.tholagig.network.SessionManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import student.projects.tholagig.jobs.JobBrowseActivity
 import student.projects.tholagig.jobs.MyApplicationsActivity
+import student.projects.tholagig.messaging.ConversationsActivity
 import student.projects.tholagig.messaging.MessagesActivity
 
 class ProfileActivity : AppCompatActivity() {
@@ -107,7 +108,7 @@ class ProfileActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_messages -> {
-                    startActivity(Intent(this, MessagesActivity::class.java))
+                    startActivity(Intent(this, ConversationsActivity::class.java))
                     finish()
                     true
                 }

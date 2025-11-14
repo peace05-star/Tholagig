@@ -1,32 +1,11 @@
 package student.projects.tholagig.models
 
-import java.util.Date
-
-/*
-data class User(
-    val userId: String = "",
-    val email: String = "",
-    val password: String = "", // Will be encrypted
-    val userType: String = "", // "client" or "freelancer"
-    val fullName: String = "",
-    val phone: String = "",
-    val profileImage: String = "",
-    val skills: List<String> = emptyList(), // For freelancers
-    val company: String = "", // For clients
-    val bio: String = "",
-    val createdAt: Date = Date()
-)
-*/
-
-
-
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.PropertyName
-import com.google.gson.annotations.SerializedName
+import java.util.Date
 
 data class User(
-    @SerializedName("id")
     @get:PropertyName("userId")
     @set:PropertyName("userId")
     var userId: String = "",
@@ -59,14 +38,18 @@ data class User(
     @set:PropertyName("skills")
     var skills: List<String> = emptyList(),
 
-    // Use Timestamp for Firestore, but provide Long getters for convenience
+    @get:PropertyName("profileImage")
+    @set:PropertyName("profileImage")
+    var profileImage: String? = null,
+
+    // 🆕 FIX: Use Any to handle both Timestamp and Long
     @get:PropertyName("createdAt")
     @set:PropertyName("createdAt")
-    var createdAt: Timestamp? = null,
+    var createdAt: Any? = null,
 
     @get:PropertyName("updatedAt")
     @set:PropertyName("updatedAt")
-    var updatedAt: Timestamp? = null,
+    var updatedAt: Any? = null,
 
     // Exclude these from Firestore
     @Exclude
@@ -78,19 +61,45 @@ data class User(
     @Exclude
     var completedJobs: Int = 0
 ) {
-    // Helper getter for Long timestamp (converts from Firestore Timestamp)
+    // 🆕 FIX: Safe date getters that handle both Timestamp and Long
+    @Exclude
+    fun getCreatedAtDate(): Date? {
+        return when (createdAt) {
+            is Timestamp -> (createdAt as Timestamp).toDate()
+            is Long -> Date(createdAt as Long)
+            is com.google.firebase.Timestamp -> (createdAt as com.google.firebase.Timestamp).toDate()
+            else -> null
+        }
+    }
+
+    @Exclude
+    fun getUpdatedAtDate(): Date? {
+        return when (updatedAt) {
+            is Timestamp -> (updatedAt as Timestamp).toDate()
+            is Long -> Date(updatedAt as Long)
+            is com.google.firebase.Timestamp -> (updatedAt as com.google.firebase.Timestamp).toDate()
+            else -> null
+        }
+    }
+
     @Exclude
     fun getCreatedAtLong(): Long {
-        return createdAt?.toDate()?.time ?: System.currentTimeMillis()
+        return getCreatedAtDate()?.time ?: System.currentTimeMillis()
     }
 
     @Exclude
     fun getUpdatedAtLong(): Long {
-        return updatedAt?.toDate()?.time ?: System.currentTimeMillis()
+        return getUpdatedAtDate()?.time ?: System.currentTimeMillis()
     }
 
-    // Helper to get company name for JSONPlaceholder compatibility
+    // Helper to get company name
     fun getCompanyName(): String {
         return if (company.isNotEmpty()) company else "Your Company"
+    }
+
+    // 🆕 FIX: Helper to check if user data is valid
+    @Exclude
+    fun isValid(): Boolean {
+        return userId.isNotEmpty() && fullName.isNotEmpty() && email.isNotEmpty()
     }
 }

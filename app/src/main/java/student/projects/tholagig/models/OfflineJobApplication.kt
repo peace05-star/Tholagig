@@ -3,12 +3,15 @@ package student.projects.tholagig.models
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Index
+import androidx.room.TypeConverters
+import student.projects.tholagig.database.Converters
 import java.util.Date
 
 @Entity(
     tableName = "offline_applications",
     indices = [Index(value = ["jobId"]), Index(value = ["freelancerId"])]
 )
+@TypeConverters(Converters::class) // ADD THIS LINE
 data class OfflineApplication(
     @PrimaryKey
     val applicationId: String = "",
@@ -26,11 +29,14 @@ data class OfflineApplication(
     val estimatedTime: String = "",
     val freelancerRating: Double = 0.0,
     val freelancerCompletedJobs: Int = 0,
+
+    // This will now work with the TypeConverter
     val freelancerSkills: List<String> = emptyList(),
-    val isSynced: Boolean = true, // New field for sync tracking
-    val lastUpdated: Long = System.currentTimeMillis() // New field for sync
+
+    val isSynced: Boolean = true,
+    val lastUpdated: Long = System.currentTimeMillis()
 ) {
-    // Convert from JobApplication to OfflineApplication
+    // ... your existing companion object and methods
     companion object {
         fun fromJobApplication(application: JobApplication): OfflineApplication {
             return OfflineApplication(
@@ -55,7 +61,6 @@ data class OfflineApplication(
         }
     }
 
-    // Convert back to JobApplication
     fun toJobApplication(): JobApplication {
         return JobApplication(
             applicationId = applicationId,

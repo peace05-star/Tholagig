@@ -4,6 +4,8 @@ import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -11,8 +13,11 @@ import kotlinx.coroutines.tasks.await
 import student.projects.tholagig.models.User
 import student.projects.tholagig.models.Job
 import student.projects.tholagig.models.JobApplication
+import student.projects.tholagig.models.Message
 import java.util.Date
 import kotlin.math.abs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class FirebaseService {
     private val db = FirebaseFirestore.getInstance()
@@ -20,6 +25,10 @@ class FirebaseService {
     private val TAG = "FirebaseService"
     private val firestore: FirebaseFirestore = Firebase.firestore
 
+
+    fun getFirestore(): FirebaseFirestore {
+        return db
+    }
     // === ENHANCED USER OPERATIONS ===
 
     suspend fun registerUser(user: User): Result<User> {
@@ -459,6 +468,25 @@ class FirebaseService {
                 .await()
 
             Log.d(TAG, "🟢 Application submitted successfully")
+
+            // Auto-create a welcome message to start conversation
+            val welcomeMessage = Message(
+                messageId = "msg_${System.currentTimeMillis()}",
+                conversationId = if (application.freelancerId < application.clientId)
+                    "${application.freelancerId}-${application.clientId}"
+                else
+                    "${application.clientId}-${application.freelancerId}",
+                senderId = application.clientId,
+                receiverId = application.freelancerId,
+                content = "Thanks for applying to '${application.jobTitle}'! I'll review your application and get back to you soon.",
+                timestamp = Date(),
+                isRead = false
+            )
+
+            // Send the welcome message
+            sendMessage(welcomeMessage)
+            Log.d(TAG, "💬 Auto-created welcome message for application")
+
             Result.success(applicationWithId)
         } catch (e: Exception) {
             Log.e(TAG, "🔴 Error submitting application: ${e.message}")
@@ -500,17 +528,38 @@ class FirebaseService {
         }
     }
 
-    suspend fun getApplicationsByClient(clientId: String): Result<List<JobApplication>> {
-        return try {
+    suspend fun getApplicationsByClient(clientId: String): Result<List<JobApplication>> = withContext(Dispatchers.IO) {
+        try {
+            Log.d("FirebaseService", "📡 Fetching applications for client: $clientId")
+
             val snapshot = db.collection("applications")
                 .whereEqualTo("clientId", clientId)
-                .orderBy("appliedAt", Query.Direction.DESCENDING)
                 .get()
                 .await()
 
-            val applications = snapshot.toObjects(JobApplication::class.java)
+            Log.d("FirebaseService", "✅ Firestore query completed, documents: ${snapshot.documents.size}")
+
+            val applications = snapshot.documents.mapNotNull { document ->
+                try {
+                    Log.d("FirebaseService", "📄 Processing application document: ${document.id}")
+                    val application = document.toObject(JobApplication::class.java)
+                    if (application != null) {
+                        Log.d("FirebaseService", "✅ Loaded application: ${application.jobTitle} | Status: ${application.status} | Client: ${application.clientId}")
+                    } else {
+                        Log.e("FirebaseService", "❌ Failed to convert document to JobApplication: ${document.id}")
+                    }
+                    application
+                } catch (e: Exception) {
+                    Log.e("FirebaseService", "💥 Error parsing application ${document.id}: ${e.message}")
+                    null
+                }
+            }
+
+            Log.d("FirebaseService", "🎯 Final applications count for client $clientId: ${applications.size}")
             Result.success(applications)
+
         } catch (e: Exception) {
+            Log.e("FirebaseService", "💥 ERROR in getApplicationsByClient: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -702,6 +751,271 @@ class FirebaseService {
                 .await()
             Result.success(true)
         } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // === REAL-TIME MESSAGING METHODS ===
+
+    suspend fun sendMessage(message: Message): Result<Boolean> {
+        return try {
+            Log.d(TAG, "🟡 Sending message: ${message.content}")
+
+            // Save message to Firestore
+            db.collection("messages")
+                .document(message.messageId)
+                .set(message)
+                .await()
+
+            Log.d(TAG, "🟢 Message saved successfully")
+            Result.success(true)
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 Error sending message: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    fun listenToMessages(
+        conversationId: String,
+        onMessagesReceived: (List<Message>) -> Unit,
+        onError: (Exception) -> Unit
+    ): ListenerRegistration {
+        return db.collection("messages")
+            .whereEqualTo("conversationId", conversationId)
+            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    onError(Exception(error.message))
+                    return@addSnapshotListener
+                }
+
+                snapshot?.let { querySnapshot ->
+                    val messages = mutableListOf<Message>()
+                    for (document in querySnapshot.documents) {
+                        try {
+                            val message = document.toObject(Message::class.java)
+                            message?.let { messages.add(it) }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error converting message: ${e.message}")
+                        }
+                    }
+                    onMessagesReceived(messages)
+                }
+            }
+    }
+
+
+    suspend fun getUserName(userId: String): Result<String> {
+        return try {
+            val userDoc = db.collection("users").document(userId).get().await()
+            if (userDoc.exists()) {
+                val name = userDoc.getString("fullName") ?: "User"
+                Result.success(name)
+            } else {
+                Result.success("Unknown User")
+            }
+        } catch (e: Exception) {
+            Result.success("Unknown User")
+        }
+    }
+
+    /**
+     * Create a simple notification in Firestore (for demo purposes)
+     */
+    suspend fun createDemoNotification(
+        receiverId: String,
+        title: String,
+        message: String,
+        conversationId: String
+    ): Result<Boolean> {
+        return try {
+            val notificationData = hashMapOf(
+                "receiverId" to receiverId,
+                "title" to title,
+                "message" to message,
+                "conversationId" to conversationId,
+                "timestamp" to com.google.firebase.Timestamp.now(),
+                "read" to false
+            )
+
+            db.collection("demo_notifications")
+                .add(notificationData)
+                .await()
+
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Get all conversations for a user
+     */
+    suspend fun getUserConversations(userId: String): Result<List<Message>> {
+        return try {
+            Log.d(TAG, "🟡 Getting conversations for user: $userId")
+
+            // Get messages where user is either sender or receiver
+            val sentSnapshot = db.collection("messages")
+                .whereEqualTo("senderId", userId)
+                .get()
+                .await()
+
+            val receivedSnapshot = db.collection("messages")
+                .whereEqualTo("receiverId", userId)
+                .get()
+                .await()
+
+            val allMessages = mutableListOf<Message>()
+            allMessages.addAll(sentSnapshot.toObjects(Message::class.java))
+            allMessages.addAll(receivedSnapshot.toObjects(Message::class.java))
+
+            // Sort by timestamp (newest first)
+            val sortedMessages = allMessages.sortedByDescending { it.timestamp }
+
+            Log.d(TAG, "🟢 Found ${sortedMessages.size} messages for user")
+            Result.success(sortedMessages)
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 Error getting conversations: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Mark messages as read in a conversation
+     */
+    suspend fun markConversationAsRead(otherUserId: String, currentUserId: String): Result<Boolean> {
+        return try {
+            val conversationId = if (currentUserId < otherUserId)
+                "$currentUserId-$otherUserId"
+            else
+                "$otherUserId-$currentUserId"
+
+            val snapshot = db.collection("messages")
+                .whereEqualTo("conversationId", conversationId)
+                .whereEqualTo("receiverId", currentUserId)
+                .whereEqualTo("isRead", false)
+                .get()
+                .await()
+
+            val batch = db.batch()
+            for (document in snapshot.documents) {
+                batch.update(document.reference, "isRead", true)
+            }
+
+            if (!snapshot.isEmpty) {
+                batch.commit().await()
+                Log.d(TAG, "🟢 Marked ${snapshot.documents.size} messages as read")
+            }
+
+            Result.success(true)
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 Error marking messages as read: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Get user's name by ID
+     */
+    suspend fun getUserByIdForMessaging(userId: String): Result<String> {
+        return try {
+            val userDoc = db.collection("users").document(userId).get().await()
+            if (userDoc.exists()) {
+                val name = userDoc.getString("fullName") ?:
+                userDoc.getString("username") ?:
+                userDoc.getString("email")?.substringBefore("@") ?:
+                "User"
+                Result.success(name)
+            } else {
+                Result.success("Unknown User")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 Error getting user name: ${e.message}")
+            Result.success("Unknown User")
+        }
+    }
+
+    // Add this to your FirebaseService class
+    fun listenForNewMessages(userId: String, onNewMessage: (Message) -> Unit) {
+        try {
+            db.collection("messages")
+                .whereEqualTo("receiverId", userId)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        Log.e("FIREBASE_SERVICE", "❌ Error listening to messages: ${error.message}")
+                        return@addSnapshotListener
+                    }
+
+                    snapshot?.documentChanges?.forEach { change ->
+                        if (change.type == DocumentChange.Type.ADDED) {
+                            val message = change.document.toObject(Message::class.java)
+                            Log.d("FIREBASE_SERVICE", "📨 New message detected for user $userId")
+                            onNewMessage(message)
+                        }
+                    }
+                }
+        } catch (e: Exception) {
+            Log.e("FIREBASE_SERVICE", "❌ Error setting up message listener: ${e.message}")
+        }
+    }
+
+
+    private fun showLocalNotification(message: Message) {
+        // This would create a system notification
+        // You'd need to implement NotificationCompat.Builder here
+    }
+
+    // Add to FirebaseService class
+    suspend fun saveFCMToken(userId: String, token: String): Result<Boolean> {
+        return try {
+            db.collection("users")
+                .document(userId)
+                .update("fcmToken", token)
+                .await()
+            Log.d(TAG, "✅ FCM token saved for user: $userId")
+            Result.success(true)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error saving FCM token: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getFCMToken(userId: String): Result<String> {
+        return try {
+            val userDoc = db.collection("users").document(userId).get().await()
+            val token = userDoc.getString("fcmToken") ?: ""
+            Result.success(token)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // In FirebaseService - enhance sendMessage function
+    suspend fun sendMessageWithNotification(message: Message): Result<Boolean> {
+        return try {
+            // 1. Save message to Firestore
+            db.collection("messages")
+                .document(message.messageId)
+                .set(message)
+                .await()
+
+            // 2. Get receiver's FCM token and send notification
+            val receiverTokenResult = getFCMToken(message.receiverId)
+            if (receiverTokenResult.isSuccess) {
+                val token = receiverTokenResult.getOrNull()
+                if (!token.isNullOrEmpty()) {
+                    // You can send a push notification here via:
+                    // - Firebase Cloud Functions
+                    // - Your own server
+                    // - Direct FCM API call (for testing)
+                    Log.d(TAG, "📲 Would send push notification to token: $token")
+                }
+            }
+
+            Result.success(true)
+        } catch (e: Exception) {
+            Log.e(TAG, "🔴 Error sending message with notification: ${e.message}")
             Result.failure(e)
         }
     }
